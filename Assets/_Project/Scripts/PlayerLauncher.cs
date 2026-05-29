@@ -4,6 +4,7 @@ public class PlayerLauncher : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private Transform visual;
 
     [Header("Launch Settings")]
     [SerializeField] private float maxDragDistance = 2.5f;
@@ -13,6 +14,11 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private float attachedGravityScale = 0f;
     [SerializeField] private float flyingGravityScale = 1.5f;
 
+    [Header("Stretch Settings")]
+    [SerializeField] private float maxStretchY = 1.7f;
+    [SerializeField] private float minStretchX = 0.75f;
+    [SerializeField] private float stretchReturnSpeed = 12f;
+
     private bool isAttached = true;
     private bool isDragging = false;
 
@@ -20,6 +26,7 @@ public class PlayerLauncher : MonoBehaviour
     private Vector2 currentDragWorld;
 
     private float attachX;
+    private Vector3 baseVisualScale;
 
     private void Reset()
     {
@@ -31,6 +38,21 @@ public class PlayerLauncher : MonoBehaviour
         if (rb == null)
         {
             rb = GetComponent<Rigidbody2D>();
+        }
+
+        if (visual == null)
+        {
+            Transform foundVisual = transform.Find("Visual");
+
+            if (foundVisual != null)
+            {
+                visual = foundVisual;
+            }
+        }
+
+        if (visual != null)
+        {
+            baseVisualScale = visual.localScale;
         }
 
         attachX = transform.position.x;
@@ -47,6 +69,7 @@ public class PlayerLauncher : MonoBehaviour
         else
         {
             HandleAirAttach();
+            ReturnVisualToNormal();
         }
     }
 
@@ -62,16 +85,22 @@ public class PlayerLauncher : MonoBehaviour
         if (Input.GetMouseButton(0) && isDragging)
         {
             currentDragWorld = GetMouseWorldPosition();
+
+            float dragPower01 = GetDragPower01();
+            UpdateVisualStretch(dragPower01);
         }
 
         if (Input.GetMouseButtonUp(0) && isDragging)
         {
             isDragging = false;
 
-            float dragDownDistance = Mathf.Max(0f, dragStartWorld.y - currentDragWorld.y);
-            dragDownDistance = Mathf.Clamp(dragDownDistance, 0f, maxDragDistance);
+            float dragDistance = GetDragDistance();
+            Launch(dragDistance);
+        }
 
-            Launch(dragDownDistance);
+        if (!isDragging)
+        {
+            ReturnVisualToNormal();
         }
     }
 
@@ -107,6 +136,61 @@ public class PlayerLauncher : MonoBehaviour
         rb.gravityScale = attachedGravityScale;
 
         transform.position = new Vector3(attachX, transform.position.y, transform.position.z);
+
+        ReturnVisualToNormalInstantly();
+    }
+
+    private float GetDragDistance()
+    {
+        float dragDownDistance = Mathf.Max(0f, dragStartWorld.y - currentDragWorld.y);
+        return Mathf.Clamp(dragDownDistance, 0f, maxDragDistance);
+    }
+
+    private float GetDragPower01()
+    {
+        float dragDistance = GetDragDistance();
+        return dragDistance / maxDragDistance;
+    }
+
+    private void UpdateVisualStretch(float power01)
+    {
+        if (visual == null)
+        {
+            return;
+        }
+
+        float targetScaleY = Mathf.Lerp(baseVisualScale.y, baseVisualScale.y * maxStretchY, power01);
+        float targetScaleX = Mathf.Lerp(baseVisualScale.x, baseVisualScale.x * minStretchX, power01);
+
+        visual.localScale = new Vector3(
+            targetScaleX,
+            targetScaleY,
+            baseVisualScale.z
+        );
+    }
+
+    private void ReturnVisualToNormal()
+    {
+        if (visual == null)
+        {
+            return;
+        }
+
+        visual.localScale = Vector3.Lerp(
+            visual.localScale,
+            baseVisualScale,
+            stretchReturnSpeed * Time.deltaTime
+        );
+    }
+
+    private void ReturnVisualToNormalInstantly()
+    {
+        if (visual == null)
+        {
+            return;
+        }
+
+        visual.localScale = baseVisualScale;
     }
 
     private Vector2 GetMouseWorldPosition()

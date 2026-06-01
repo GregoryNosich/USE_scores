@@ -33,6 +33,8 @@ public class PlayerLauncher : MonoBehaviour
 
     private Vector3 baseVisualScale;
 
+    private bool inputEnabled = true;
+
     private void Reset()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -67,6 +69,12 @@ public class PlayerLauncher : MonoBehaviour
 
     private void Update()
     {
+        if (!inputEnabled)
+        {
+            ReturnVisualToNormal();
+            return;
+        }
+
         if (isAttached)
         {
             HandleDragLaunch();
@@ -251,5 +259,16 @@ public class PlayerLauncher : MonoBehaviour
 
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(checkPosition, attachCheckRadius);
+    }
+
+    public void SetInputEnabled(bool enabled)
+    {
+        inputEnabled = enabled;
+
+        if (!inputEnabled)
+        {
+            isDragging = false;
+            ReturnVisualToNormalInstantly();
+        }
     }
 }

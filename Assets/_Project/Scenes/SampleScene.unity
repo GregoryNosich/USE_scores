@@ -249,7 +249,7 @@ MonoBehaviour:
   timerText: {fileID: 1479445669}
   heightText: {fileID: 1654596110}
   timeLimit: 15
-  maxHeight: 500
+  maxHeight: 700
   maxScore: 300
 --- !u!1 &804929967
 GameObject:
@@ -1126,6 +1126,14 @@ PrefabInstance:
     - target: {fileID: 5046452700281488388, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5046452700281488388, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6312195113834622365, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: m_Interpolate
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

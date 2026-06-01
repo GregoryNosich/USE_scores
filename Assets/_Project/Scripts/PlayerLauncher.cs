@@ -13,6 +13,9 @@ public class PlayerLauncher : MonoBehaviour
     [Header("Attach Settings")]
     [SerializeField] private float attachedGravityScale = 0f;
     [SerializeField] private float flyingGravityScale = 1.5f;
+    [SerializeField] private float attachCheckRadius = 0.35f;
+    [SerializeField] private LayerMask obstacleLayer;
+    [SerializeField] private LayerMask boostLayer;
 
     [Header("Stretch Settings")]
     [SerializeField] private float maxStretchY = 1.7f;
@@ -26,6 +29,8 @@ public class PlayerLauncher : MonoBehaviour
     private Vector2 currentDragWorld;
 
     private float attachX;
+    private float nextLaunchMultiplier = 1f;
+
     private Vector3 baseVisualScale;
 
     private void Reset()
@@ -57,7 +62,7 @@ public class PlayerLauncher : MonoBehaviour
 
         attachX = transform.position.x;
 
-        AttachToPole();
+        AttachToPoleWithoutChecks();
     }
 
     private void Update()
@@ -92,6 +97,7 @@ public class PlayerLauncher : MonoBehaviour
 
         if (Input.GetMouseButtonUp(0) && isDragging)
         {
+            currentDragWorld = GetMouseWorldPosition();
             isDragging = false;
 
             float dragDistance = GetDragDistance();
@@ -108,7 +114,7 @@ public class PlayerLauncher : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            AttachToPole();
+            TryAttachToPole();
         }
     }
 
@@ -124,11 +130,48 @@ public class PlayerLauncher : MonoBehaviour
         rb.gravityScale = flyingGravityScale;
         rb.velocity = Vector2.zero;
 
-        float force = dragDistance / maxDragDistance * launchPower;
+        float force = dragDistance / maxDragDistance * launchPower * nextLaunchMultiplier;
         rb.velocity = new Vector2(0f, force);
+
+        nextLaunchMultiplier = 1f;
     }
 
-    private void AttachToPole()
+    private void TryAttachToPole()
+    {
+        Vector2 attachPoint = new Vector2(attachX, transform.position.y);
+
+        bool hitObstacle = Physics2D.OverlapCircle(
+            attachPoint,
+            attachCheckRadius,
+            obstacleLayer
+        );
+
+        if (hitObstacle)
+        {
+            return;
+        }
+
+        Collider2D boostCollider = Physics2D.OverlapCircle(
+            attachPoint,
+            attachCheckRadius,
+            boostLayer
+        );
+
+        if (boostCollider != null)
+        {
+            BoostZone boostZone = boostCollider.GetComponent<BoostZone>();
+
+            if (boostZone != null)
+            {
+                nextLaunchMultiplier = boostZone.LaunchMultiplier;
+                boostZone.Collect();
+            }
+        }
+
+        AttachToPoleWithoutChecks();
+    }
+
+    private void AttachToPoleWithoutChecks()
     {
         isAttached = true;
 
@@ -199,5 +242,14 @@ public class PlayerLauncher : MonoBehaviour
         Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
 
         return new Vector2(mouseWorldPosition.x, mouseWorldPosition.y);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        float checkX = Application.isPlaying ? attachX : transform.position.x;
+        Vector3 checkPosition = new Vector3(checkX, transform.position.y, transform.position.z);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(checkPosition, attachCheckRadius);
     }
 }

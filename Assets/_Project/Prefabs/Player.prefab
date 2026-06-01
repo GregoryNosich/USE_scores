@@ -115,6 +115,13 @@ MonoBehaviour:
   launchPower: 12
   attachedGravityScale: 0
   flyingGravityScale: 1.5
+  attachCheckRadius: 0.35
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  boostLayer:
+    serializedVersion: 2
+    m_Bits: 128
   maxStretchY: 1.7
   minStretchX: 0.75
   stretchReturnSpeed: 12

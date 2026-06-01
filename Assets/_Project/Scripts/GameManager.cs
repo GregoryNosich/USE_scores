@@ -103,7 +103,7 @@ public class GameManager : MonoBehaviour
 
         if (playerLauncher != null)
         {
-            playerLauncher.SetInputEnabled(false);
+            playerLauncher.FreezePlayer();
         }
     }
 

@@ -281,4 +281,16 @@ public class PlayerLauncher : MonoBehaviour
             ReturnVisualToNormalInstantly();
         }
     }
+
+    public void FreezePlayer()
+    {
+        inputEnabled = false;
+        isDragging = false;
+        isAttached = false;
+
+        rb.velocity = Vector2.zero;
+        rb.gravityScale = 0f;
+
+        ReturnVisualToNormalInstantly();
+    }
 }

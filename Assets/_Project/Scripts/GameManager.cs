@@ -14,8 +14,11 @@ public class GameManager : MonoBehaviour
 
     private float timeLeft;
     private float startPlayerY;
+
+    private bool isTimerStarted = false;
     private bool isGameOver = false;
 
+    public bool IsTimerStarted => isTimerStarted;
     public bool IsGameOver => isGameOver;
 
     private void Awake()
@@ -26,6 +29,15 @@ public class GameManager : MonoBehaviour
         {
             startPlayerY = player.position.y;
         }
+
+        if (playerLauncher != null)
+        {
+            playerLauncher.SetInputEnabled(true);
+            playerLauncher.OnFirstLaunch += StartTimer;
+        }
+
+        UpdateTimerText();
+        UpdateHeight();
     }
 
     private void Update()
@@ -35,8 +47,22 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        UpdateTimer();
+        if (isTimerStarted)
+        {
+            UpdateTimer();
+        }
+
         UpdateHeight();
+    }
+
+    private void StartTimer()
+    {
+        if (isTimerStarted)
+        {
+            return;
+        }
+
+        isTimerStarted = true;
     }
 
     private void UpdateTimer()
@@ -49,6 +75,11 @@ public class GameManager : MonoBehaviour
             EndGame();
         }
 
+        UpdateTimerText();
+    }
+
+    private void UpdateTimerText()
+    {
         if (timerText != null)
         {
             timerText.text = $"Time: {timeLeft:F1}";
@@ -73,6 +104,14 @@ public class GameManager : MonoBehaviour
         if (playerLauncher != null)
         {
             playerLauncher.SetInputEnabled(false);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (playerLauncher != null)
+        {
+            playerLauncher.OnFirstLaunch -= StartTimer;
         }
     }
 }

@@ -1,7 +1,10 @@
 using UnityEngine;
+using System;
 
 public class PlayerLauncher : MonoBehaviour
 {
+    public event Action OnFirstLaunch;
+
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform visual;
@@ -24,6 +27,8 @@ public class PlayerLauncher : MonoBehaviour
 
     private bool isAttached = true;
     private bool isDragging = false;
+    private bool inputEnabled = true;
+    private bool hasLaunchedOnce = false;
 
     private Vector2 dragStartWorld;
     private Vector2 currentDragWorld;
@@ -33,7 +38,6 @@ public class PlayerLauncher : MonoBehaviour
 
     private Vector3 baseVisualScale;
 
-    private bool inputEnabled = true;
 
     private void Reset()
     {
@@ -131,6 +135,12 @@ public class PlayerLauncher : MonoBehaviour
         if (dragDistance <= 0.05f)
         {
             return;
+        }
+
+        if (!hasLaunchedOnce)
+        {
+            hasLaunchedOnce = true;
+            OnFirstLaunch?.Invoke();
         }
 
         isAttached = false;

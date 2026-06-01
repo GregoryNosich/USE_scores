@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Timer Settings")]
     [SerializeField] private float timeLimit = 15f;
+    [SerializeField] private float maxHeight = 80f;
+    [SerializeField] private float maxScore = 300f;
 
     private float timeLeft;
     private float startPlayerY;
@@ -82,8 +84,13 @@ public class GameManager : MonoBehaviour
     {
         if (timerText != null)
         {
-            timerText.text = $"Time: {timeLeft:F1}";
+            timerText.text = $"Осталось {timeLeft:F1} секунд";
         }
+    }
+
+    private float GetScore(float height)
+    {
+        return (height / maxHeight) * maxScore;
     }
 
     private void UpdateHeight()
@@ -94,7 +101,8 @@ public class GameManager : MonoBehaviour
         }
 
         float height = Mathf.Max(0f, player.position.y - startPlayerY);
-        heightText.text = $"Height: {height:F1} m";
+        float score = GetScore(height);
+        heightText.text = $"Результат: {score:F1}";
     }
 
     private void EndGame()

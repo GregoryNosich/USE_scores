@@ -3,7 +3,7 @@ using UnityEngine;
 public class BoostZone : MonoBehaviour
 {
     [SerializeField] private float launchMultiplier = 1.5f;
-    [SerializeField] private bool consumeAfterUse = true;
+    [SerializeField] private bool consumeAfterUse = false;
 
     public float LaunchMultiplier => launchMultiplier;
 

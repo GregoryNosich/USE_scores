@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerLauncher playerLauncher;
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private TMP_Text heightText;
+    [SerializeField] private TMP_Text jumpsText;
 
     [Header("Timer Settings")]
     [SerializeField] private float timeLimit = 15f;
@@ -36,6 +37,8 @@ public class GameManager : MonoBehaviour
         {
             playerLauncher.SetInputEnabled(true);
             playerLauncher.OnFirstLaunch += StartTimer;
+            playerLauncher.OnJumpsRemainingChanged += UpdateJumpsText;
+            UpdateJumpsText(playerLauncher.JumpsRemaining);
         }
 
         UpdateTimerText();
@@ -105,6 +108,14 @@ public class GameManager : MonoBehaviour
         heightText.text = $"Результат: {score:F1}";
     }
 
+    private void UpdateJumpsText(int jumpsRemaining)
+    {
+        if (jumpsText != null && playerLauncher != null)
+        {
+            jumpsText.text = $"Прыжки: {jumpsRemaining}/{playerLauncher.MaxJumps}";
+        }
+    }
+
     private void EndGame()
     {
         isGameOver = true;
@@ -120,6 +131,7 @@ public class GameManager : MonoBehaviour
         if (playerLauncher != null)
         {
             playerLauncher.OnFirstLaunch -= StartTimer;
+            playerLauncher.OnJumpsRemainingChanged -= UpdateJumpsText;
         }
     }
 }

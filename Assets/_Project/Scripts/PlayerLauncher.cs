@@ -4,12 +4,14 @@ using System;
 public class PlayerLauncher : MonoBehaviour
 {
     public event Action OnFirstLaunch;
+    public event Action<int> OnJumpsRemainingChanged;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform visual;
 
     [Header("Launch Settings")]
+    [SerializeField] private int maxJumps = 5;
     [SerializeField] private float maxDragDistance = 2.5f;
     [SerializeField] private float launchPower = 12f;
 
@@ -24,19 +26,29 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private float maxStretchY = 1.7f;
     [SerializeField] private float minStretchX = 0.75f;
     [SerializeField] private float stretchReturnSpeed = 12f;
+    [SerializeField] private float flyingVisualScaleMultiplier = 1.5f;
 
     private bool isAttached = true;
     private bool isDragging = false;
     private bool inputEnabled = true;
     private bool hasLaunchedOnce = false;
+    private bool jumpCounterInitialized = false;
 
     private Vector2 dragStartWorld;
     private Vector2 currentDragWorld;
 
     private float attachX;
     private float nextLaunchMultiplier = 1f;
+    private int jumpsRemaining;
 
     private Vector3 baseVisualScale;
+    private Vector3 baseVisualLocalPosition;
+    private float baseVisualTopLocalY;
+    private float visualTopOffset = 0.5f;
+
+    public int MaxJumps => maxJumps;
+    public int JumpsRemaining => jumpCounterInitialized ? jumpsRemaining : Mathf.Max(0, maxJumps);
+    public bool HasJumpsRemaining => JumpsRemaining > 0;
 
 
     private void Reset()
@@ -64,11 +76,14 @@ public class PlayerLauncher : MonoBehaviour
         if (visual != null)
         {
             baseVisualScale = visual.localScale;
+            baseVisualLocalPosition = visual.localPosition;
+            baseVisualTopLocalY = GetVisualTopLocalY(baseVisualScale, baseVisualLocalPosition);
         }
 
         attachX = transform.position.x;
 
-        AttachToPoleWithoutChecks();
+        ResetJumpLimit();
+        AttachToPoleWithoutChecks(true);
     }
 
     private void Update()
@@ -86,12 +101,18 @@ public class PlayerLauncher : MonoBehaviour
         else
         {
             HandleAirAttach();
-            ReturnVisualToNormal();
+            ReturnVisualToFlyingScale();
         }
     }
 
     private void HandleDragLaunch()
     {
+        if (!HasJumpsRemaining)
+        {
+            ReturnVisualToNormal();
+            return;
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             isDragging = true;
@@ -132,10 +153,17 @@ public class PlayerLauncher : MonoBehaviour
 
     private void Launch(float dragDistance)
     {
+        if (!HasJumpsRemaining)
+        {
+            return;
+        }
+
         if (dragDistance <= 0.05f)
         {
             return;
         }
+
+        SpendJump();
 
         if (!hasLaunchedOnce)
         {
@@ -152,6 +180,12 @@ public class PlayerLauncher : MonoBehaviour
         rb.velocity = new Vector2(0f, force);
 
         nextLaunchMultiplier = 1f;
+    }
+
+    private void SpendJump()
+    {
+        jumpsRemaining = Mathf.Max(0, jumpsRemaining - 1);
+        OnJumpsRemainingChanged?.Invoke(jumpsRemaining);
     }
 
     private void TryAttachToPole()
@@ -189,7 +223,7 @@ public class PlayerLauncher : MonoBehaviour
         AttachToPoleWithoutChecks();
     }
 
-    private void AttachToPoleWithoutChecks()
+    private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false)
     {
         isAttached = true;
 
@@ -198,7 +232,10 @@ public class PlayerLauncher : MonoBehaviour
 
         transform.position = new Vector3(attachX, transform.position.y, transform.position.z);
 
-        ReturnVisualToNormalInstantly();
+        if (resetVisualInstantly)
+        {
+            ReturnVisualToNormalInstantly();
+        }
     }
 
     private float GetDragDistance()
@@ -228,6 +265,8 @@ public class PlayerLauncher : MonoBehaviour
             targetScaleY,
             baseVisualScale.z
         );
+
+        KeepVisualTopEdgeFixed();
     }
 
     private void ReturnVisualToNormal()
@@ -242,6 +281,34 @@ public class PlayerLauncher : MonoBehaviour
             baseVisualScale,
             stretchReturnSpeed * Time.deltaTime
         );
+
+        visual.localPosition = Vector3.Lerp(
+            visual.localPosition,
+            baseVisualLocalPosition,
+            stretchReturnSpeed * Time.deltaTime
+        );
+    }
+
+    private void ReturnVisualToFlyingScale()
+    {
+        if (visual == null)
+        {
+            return;
+        }
+
+        Vector3 targetScale = baseVisualScale * flyingVisualScaleMultiplier;
+
+        visual.localScale = Vector3.Lerp(
+            visual.localScale,
+            targetScale,
+            stretchReturnSpeed * Time.deltaTime
+        );
+
+        visual.localPosition = Vector3.Lerp(
+            visual.localPosition,
+            baseVisualLocalPosition,
+            stretchReturnSpeed * Time.deltaTime
+        );
     }
 
     private void ReturnVisualToNormalInstantly()
@@ -252,6 +319,30 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         visual.localScale = baseVisualScale;
+        visual.localPosition = baseVisualLocalPosition;
+    }
+
+    private float GetVisualTopLocalY(Vector3 scale, Vector3 localPosition)
+    {
+        SpriteRenderer spriteRenderer = visual.GetComponent<SpriteRenderer>();
+
+        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        {
+            visualTopOffset = spriteRenderer.sprite.bounds.max.y;
+        }
+
+        return localPosition.y + visualTopOffset * scale.y;
+    }
+
+    private void KeepVisualTopEdgeFixed()
+    {
+        float targetLocalY = baseVisualTopLocalY - visualTopOffset * visual.localScale.y;
+
+        visual.localPosition = new Vector3(
+            baseVisualLocalPosition.x,
+            targetLocalY,
+            baseVisualLocalPosition.z
+        );
     }
 
     private Vector2 GetMouseWorldPosition()
@@ -292,5 +383,12 @@ public class PlayerLauncher : MonoBehaviour
         rb.gravityScale = 0f;
 
         ReturnVisualToNormalInstantly();
+    }
+
+    public void ResetJumpLimit()
+    {
+        jumpsRemaining = Mathf.Max(0, maxJumps);
+        jumpCounterInitialized = true;
+        OnJumpsRemainingChanged?.Invoke(jumpsRemaining);
     }
 }

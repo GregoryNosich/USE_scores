@@ -210,14 +210,15 @@ public class PlayerLauncher : MonoBehaviour
     {
         Vector2 attachPoint = new Vector2(attachX, transform.position.y);
 
-        bool hitObstacle = Physics2D.OverlapCircle(
+        Collider2D obstacleCollider = Physics2D.OverlapCircle(
             attachPoint,
             attachCheckRadius,
             obstacleLayer
         );
 
-        if (hitObstacle)
+        if (obstacleCollider != null)
         {
+            FlashAttachZone(obstacleCollider);
             return;
         }
 
@@ -229,6 +230,8 @@ public class PlayerLauncher : MonoBehaviour
 
         if (boostCollider != null)
         {
+            FlashAttachZone(boostCollider);
+
             BoostZone boostZone = boostCollider.GetComponent<BoostZone>();
 
             if (boostZone != null)
@@ -239,6 +242,18 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         AttachToPoleWithoutChecks();
+    }
+
+    private void FlashAttachZone(Collider2D zoneCollider)
+    {
+        AttachZoneFeedback feedback = zoneCollider.GetComponent<AttachZoneFeedback>();
+
+        if (feedback == null)
+        {
+            feedback = zoneCollider.gameObject.AddComponent<AttachZoneFeedback>();
+        }
+
+        feedback.Flash();
     }
 
     private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false)

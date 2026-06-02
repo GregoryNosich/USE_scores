@@ -454,6 +454,31 @@ MonoBehaviour:
   heightText: {fileID: 1654596110}
   jumpsText: {fileID: 245945875}
   tutorialObject: {fileID: 1581510496}
+  dragTutorialFrames:
+  - {fileID: 21300000, guid: 9cf8ca69d5694f242b50ae776abdd703, type: 3}
+  - {fileID: 21300000, guid: bd568274226c2cb4cbd306f9d4dcb387, type: 3}
+  - {fileID: 21300000, guid: d36cb5a3283ab25449dd44b9d105fa06, type: 3}
+  - {fileID: 21300000, guid: 8d5668b9242c3b64d8f92155505a01a8, type: 3}
+  - {fileID: 21300000, guid: 23fdbae630e9cd94785e8fa38a20ce0b, type: 3}
+  - {fileID: 21300000, guid: e7a1904fca9cf5b4bb2830abcc189993, type: 3}
+  - {fileID: 21300000, guid: d103740b10b0e1544912e965fd097654, type: 3}
+  - {fileID: 21300000, guid: 24901d9efefcd68469939588683aa039, type: 3}
+  - {fileID: 21300000, guid: 9e2026a1a0a6aa049b2385c05c75f591, type: 3}
+  - {fileID: 21300000, guid: 88c8bc2556bdf774c983f43f0054db51, type: 3}
+  - {fileID: 21300000, guid: 98613dcb2e8b2834aacdcd7825ea39e0, type: 3}
+  - {fileID: 21300000, guid: f2bb2c60d0b29ef42a6bf3c945f43977, type: 3}
+  tapTutorialFrames:
+  - {fileID: 21300000, guid: 22123583b73e61847b093b25d09eea6a, type: 3}
+  - {fileID: 21300000, guid: 2437bf0ba86748547bbb824f0dc7c186, type: 3}
+  - {fileID: 21300000, guid: 5c50e5464704f0b4bb1058e6af619cf4, type: 3}
+  - {fileID: 21300000, guid: f585f7f4503887d4b8e9d1f2fa6ae367, type: 3}
+  - {fileID: 21300000, guid: 8ccd3229d6cbcad479912f6cb1f3e3e4, type: 3}
+  - {fileID: 21300000, guid: ddd1459b52bf44c429ed6abff4739102, type: 3}
+  tutorialFrameRate: 12
+  tutorialImageHeight: 220
+  tutorialFallbackAnchoredPosition: {x: -360, y: 0}
+  dragPullStartFrame: 4
+  dragPullDownDistance: 120
   endScreenRoot: {fileID: 0}
   endScreenText: {fileID: 0}
   endScreenButton: {fileID: 0}
@@ -1037,7 +1062,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1581510497
 RectTransform:
   m_ObjectHideFlags: 0

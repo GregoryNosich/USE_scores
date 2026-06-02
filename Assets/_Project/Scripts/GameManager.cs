@@ -14,6 +14,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text jumpsText;
     [SerializeField] private GameObject tutorialObject;
 
+    [Header("Tutorial Animation")]
+    [SerializeField] private Sprite[] dragTutorialFrames;
+    [SerializeField] private Sprite[] tapTutorialFrames;
+    [SerializeField] private float tutorialFrameRate = 12f;
+    [SerializeField] private float tutorialImageHeight = 220f;
+    [SerializeField] private Vector2 tutorialFallbackAnchoredPosition = new Vector2(-360f, 0f);
+    [SerializeField] private int dragPullStartFrame = 4;
+    [SerializeField] private float dragPullDownDistance = 120f;
+
     [Header("End Screen")]
     [SerializeField] private GameObject endScreenRoot;
     [SerializeField] private TMP_Text endScreenText;
@@ -30,6 +39,12 @@ public class GameManager : MonoBehaviour
     private Color timerTextBaseColor;
     private Color jumpsTextBaseColor;
     private Coroutine jumpsTextFlashRoutine;
+    private Image tutorialAnimationImage;
+    private Sprite[] activeTutorialFrames;
+    private float tutorialFrameTimer;
+    private int tutorialFrameIndex;
+    private Vector2 tutorialBaseAnchoredPosition;
+    private bool isDragTutorialActive;
 
     private bool isTimerStarted = false;
     private bool isGameOver = false;
@@ -64,6 +79,9 @@ public class GameManager : MonoBehaviour
             tutorialObject = GameObject.Find("Tutorial");
         }
 
+        HideTextTutorial();
+        ShowDragTutorial();
+
         if (timerText != null)
         {
             timerTextBaseColor = timerText.color;
@@ -94,6 +112,7 @@ public class GameManager : MonoBehaviour
         }
 
         UpdateHeight();
+        UpdateTutorialAnimation();
     }
 
     private void StartTimer()
@@ -107,6 +126,7 @@ public class GameManager : MonoBehaviour
         SetRunTextVisible(true);
         UpdateTimerText();
         UpdateHeight();
+        ShowTapTutorial();
 
         if (playerLauncher != null)
         {
@@ -202,10 +222,181 @@ public class GameManager : MonoBehaviour
 
     private void HideTutorial()
     {
+        HideTextTutorial();
+
+        activeTutorialFrames = null;
+        isDragTutorialActive = false;
+
+        if (tutorialAnimationImage != null)
+        {
+            tutorialAnimationImage.gameObject.SetActive(false);
+        }
+    }
+
+    private void HideTextTutorial()
+    {
         if (tutorialObject != null)
         {
             tutorialObject.SetActive(false);
         }
+    }
+
+    private void ShowDragTutorial()
+    {
+        ShowTutorialAnimation(dragTutorialFrames, true);
+    }
+
+    private void ShowTapTutorial()
+    {
+        ShowTutorialAnimation(tapTutorialFrames, false);
+    }
+
+    private void ShowTutorialAnimation(Sprite[] frames, bool isDragAnimation)
+    {
+        if (frames == null || frames.Length == 0)
+        {
+            return;
+        }
+
+        EnsureTutorialAnimationImage();
+
+        if (tutorialAnimationImage == null)
+        {
+            return;
+        }
+
+        activeTutorialFrames = frames;
+        isDragTutorialActive = isDragAnimation;
+        tutorialFrameTimer = 0f;
+        tutorialFrameIndex = 0;
+        tutorialAnimationImage.sprite = activeTutorialFrames[tutorialFrameIndex];
+        FitTutorialAnimationImage();
+        ApplyTutorialFrameOffset();
+        tutorialAnimationImage.gameObject.SetActive(true);
+    }
+
+    private void EnsureTutorialAnimationImage()
+    {
+        if (tutorialAnimationImage != null)
+        {
+            return;
+        }
+
+        Canvas canvas = FindObjectOfType<Canvas>();
+
+        if (canvas == null)
+        {
+            Debug.LogWarning("Tutorial animation cannot be created because Canvas was not found.");
+            return;
+        }
+
+        GameObject tutorialAnimationObject = new GameObject(
+            "TutorialAnimation",
+            typeof(RectTransform),
+            typeof(CanvasRenderer),
+            typeof(Image)
+        );
+
+        tutorialAnimationObject.transform.SetParent(canvas.transform, false);
+
+        RectTransform rectTransform = tutorialAnimationObject.GetComponent<RectTransform>();
+        RectTransform sourceRectTransform = tutorialObject != null
+            ? tutorialObject.GetComponent<RectTransform>()
+            : null;
+
+        if (sourceRectTransform != null)
+        {
+            rectTransform.anchorMin = sourceRectTransform.anchorMin;
+            rectTransform.anchorMax = sourceRectTransform.anchorMax;
+            rectTransform.pivot = sourceRectTransform.pivot;
+            rectTransform.anchoredPosition = sourceRectTransform.anchoredPosition;
+        }
+        else
+        {
+            rectTransform.anchorMin = new Vector2(1f, 0.5f);
+            rectTransform.anchorMax = new Vector2(1f, 0.5f);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.anchoredPosition = tutorialFallbackAnchoredPosition;
+        }
+
+        tutorialBaseAnchoredPosition = rectTransform.anchoredPosition;
+
+        tutorialAnimationImage = tutorialAnimationObject.GetComponent<Image>();
+        tutorialAnimationImage.raycastTarget = false;
+        tutorialAnimationImage.preserveAspect = true;
+        tutorialAnimationImage.color = Color.white;
+
+        tutorialAnimationObject.SetActive(false);
+    }
+
+    private void UpdateTutorialAnimation()
+    {
+        if (tutorialAnimationImage == null ||
+            activeTutorialFrames == null ||
+            activeTutorialFrames.Length <= 1 ||
+            !tutorialAnimationImage.gameObject.activeSelf)
+        {
+            return;
+        }
+
+        float frameDuration = 1f / Mathf.Max(1f, tutorialFrameRate);
+        tutorialFrameTimer += Time.deltaTime;
+
+        while (tutorialFrameTimer >= frameDuration)
+        {
+            tutorialFrameTimer -= frameDuration;
+            tutorialFrameIndex = (tutorialFrameIndex + 1) % activeTutorialFrames.Length;
+            tutorialAnimationImage.sprite = activeTutorialFrames[tutorialFrameIndex];
+            ApplyTutorialFrameOffset();
+        }
+    }
+
+    private void ApplyTutorialFrameOffset()
+    {
+        if (tutorialAnimationImage == null)
+        {
+            return;
+        }
+
+        RectTransform rectTransform = tutorialAnimationImage.rectTransform;
+
+        if (!isDragTutorialActive || activeTutorialFrames == null)
+        {
+            rectTransform.anchoredPosition = tutorialBaseAnchoredPosition;
+            return;
+        }
+
+        int pullStartIndex = Mathf.Clamp(dragPullStartFrame, 1, activeTutorialFrames.Length) - 1;
+
+        if (tutorialFrameIndex <= pullStartIndex)
+        {
+            rectTransform.anchoredPosition = tutorialBaseAnchoredPosition;
+            return;
+        }
+
+        int pullFramesCount = Mathf.Max(1, activeTutorialFrames.Length - pullStartIndex - 1);
+        float pullProgress = (tutorialFrameIndex - pullStartIndex) / (float)pullFramesCount;
+        Vector2 pullOffset = Vector2.down * dragPullDownDistance * pullProgress;
+        rectTransform.anchoredPosition = tutorialBaseAnchoredPosition + pullOffset;
+    }
+
+    private void FitTutorialAnimationImage()
+    {
+        if (tutorialAnimationImage == null || tutorialAnimationImage.sprite == null)
+        {
+            return;
+        }
+
+        RectTransform rectTransform = tutorialAnimationImage.rectTransform;
+        Rect spriteRect = tutorialAnimationImage.sprite.rect;
+
+        if (spriteRect.height <= 0f)
+        {
+            return;
+        }
+
+        float width = tutorialImageHeight * spriteRect.width / spriteRect.height;
+        rectTransform.sizeDelta = new Vector2(width, tutorialImageHeight);
     }
 
     private void FlashJumpsTextRed()
@@ -245,6 +436,8 @@ public class GameManager : MonoBehaviour
         {
             playerLauncher.FreezePlayer();
         }
+
+        HideTutorial();
 
         ShowEndScreen();
     }

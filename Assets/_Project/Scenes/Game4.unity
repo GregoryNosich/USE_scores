@@ -282,7 +282,7 @@ Transform:
   m_GameObject: {fileID: 302826870}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 5}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -305,9 +305,10 @@ MonoBehaviour:
   backgroundPrefab: {fileID: 6923347790055899842, guid: a3cf377031bf0ed4681b80401ea2b244, type: 3}
   gameManager: {fileID: 519420034}
   piecesCount: 100
-  startY: 23.27
+  startY: 22
   xPosition: 0
-  zPosition: 5
+  zPosition: 0
+  backgroundSortingOrder: -1000
   overlap: 0.01
   generateScoreMarkers: 1
   markerScoreStep: 10
@@ -883,6 +884,8 @@ MonoBehaviour:
   avoidRepeatingSameChunk: 1
   chunkBaseSortingOrder: 10
   chunkSortingOrderStep: 1
+  chunkVisualSortingOrder: 0
+  zoneVisualSortingOrder: 10
 --- !u!1 &1479445667
 GameObject:
   m_ObjectHideFlags: 0

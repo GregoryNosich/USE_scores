@@ -11,7 +11,10 @@ public class BackgroundGenerator : MonoBehaviour
     [SerializeField] private int piecesCount = 20;
     [SerializeField] private float startY = 0f;
     [SerializeField] private float xPosition = 0f;
-    [SerializeField] private float zPosition = 5f;
+    [SerializeField] private float zPosition = 0f;
+
+    [Header("Sorting Settings")]
+    [SerializeField] private int backgroundSortingOrder = -1000;
 
     [Header("Seam Fix")]
     [SerializeField] private float overlap = 0.01f;
@@ -41,6 +44,7 @@ public class BackgroundGenerator : MonoBehaviour
     private void Start()
     {
         GenerateBackground();
+        ApplyBackgroundSorting();
         GenerateScoreMarkers();
     }
 
@@ -66,6 +70,20 @@ public class BackgroundGenerator : MonoBehaviour
             );
 
             piece.name = $"BackgroundPiece_{i}";
+            piece.sortingOrder = backgroundSortingOrder;
+        }
+    }
+
+    private void ApplyBackgroundSorting()
+    {
+        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+            {
+                renderers[i].sortingOrder = backgroundSortingOrder;
+            }
         }
     }
 

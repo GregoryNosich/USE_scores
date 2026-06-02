@@ -9,6 +9,7 @@ public class PlayerLauncher : MonoBehaviour
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform visual;
+    [SerializeField] private SpriteRenderer visualRenderer;
 
     [Header("Launch Settings")]
     [SerializeField] private int maxJumps = 5;
@@ -27,6 +28,10 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private float minStretchX = 0.75f;
     [SerializeField] private float stretchReturnSpeed = 12f;
     [SerializeField] private float flyingVisualScaleMultiplier = 1.5f;
+
+    [Header("Sprite Settings")]
+    [SerializeField] private Sprite attachedSprite;
+    [SerializeField] private Sprite flyingSprite;
 
     private bool isAttached = true;
     private bool isDragging = false;
@@ -72,6 +77,18 @@ public class PlayerLauncher : MonoBehaviour
                 visual = foundVisual;
             }
         }
+
+        if (visualRenderer == null && visual != null)
+        {
+            visualRenderer = visual.GetComponent<SpriteRenderer>();
+        }
+
+        if (attachedSprite == null && visualRenderer != null)
+        {
+            attachedSprite = visualRenderer.sprite;
+        }
+
+        ApplyAttachedSprite();
 
         if (visual != null)
         {
@@ -172,6 +189,7 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         isAttached = false;
+        ApplyFlyingSprite();
 
         rb.gravityScale = flyingGravityScale;
         rb.velocity = Vector2.zero;
@@ -226,6 +244,7 @@ public class PlayerLauncher : MonoBehaviour
     private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false)
     {
         isAttached = true;
+        ApplyAttachedSprite();
 
         rb.velocity = Vector2.zero;
         rb.gravityScale = attachedGravityScale;
@@ -324,14 +343,33 @@ public class PlayerLauncher : MonoBehaviour
 
     private float GetVisualTopLocalY(Vector3 scale, Vector3 localPosition)
     {
-        SpriteRenderer spriteRenderer = visual.GetComponent<SpriteRenderer>();
-
-        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        if (visualRenderer != null && visualRenderer.sprite != null)
         {
-            visualTopOffset = spriteRenderer.sprite.bounds.max.y;
+            visualTopOffset = visualRenderer.sprite.bounds.max.y;
         }
 
         return localPosition.y + visualTopOffset * scale.y;
+    }
+
+    private void ApplyAttachedSprite()
+    {
+        if (visualRenderer == null || attachedSprite == null)
+        {
+            return;
+        }
+
+        visualRenderer.sprite = attachedSprite;
+        baseVisualTopLocalY = GetVisualTopLocalY(baseVisualScale, baseVisualLocalPosition);
+    }
+
+    private void ApplyFlyingSprite()
+    {
+        if (visualRenderer == null || flyingSprite == null)
+        {
+            return;
+        }
+
+        visualRenderer.sprite = flyingSprite;
     }
 
     private void KeepVisualTopEdgeFixed()

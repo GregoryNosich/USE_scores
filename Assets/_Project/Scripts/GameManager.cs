@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
 
         UpdateTimerText();
         UpdateHeight();
+        SetRunTextVisible(false);
     }
 
     private void Update()
@@ -68,6 +69,14 @@ public class GameManager : MonoBehaviour
         }
 
         isTimerStarted = true;
+        SetRunTextVisible(true);
+        UpdateTimerText();
+        UpdateHeight();
+
+        if (playerLauncher != null)
+        {
+            UpdateJumpsText(playerLauncher.JumpsRemaining);
+        }
     }
 
     private void UpdateTimer()
@@ -113,6 +122,24 @@ public class GameManager : MonoBehaviour
         if (jumpsText != null && playerLauncher != null)
         {
             jumpsText.text = $"Прыжки: {jumpsRemaining}/{playerLauncher.MaxJumps}";
+        }
+    }
+
+    private void SetRunTextVisible(bool visible)
+    {
+        if (timerText != null)
+        {
+            timerText.gameObject.SetActive(visible);
+        }
+
+        if (heightText != null)
+        {
+            heightText.gameObject.SetActive(visible);
+        }
+
+        if (jumpsText != null)
+        {
+            jumpsText.gameObject.SetActive(visible);
         }
     }
 

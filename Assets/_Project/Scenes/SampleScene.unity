@@ -303,11 +303,28 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   backgroundPrefab: {fileID: 6923347790055899842, guid: a3cf377031bf0ed4681b80401ea2b244, type: 3}
+  gameManager: {fileID: 519420034}
   piecesCount: 100
   startY: 23.77
   xPosition: 0
   zPosition: 1
   overlap: 0.01
+  generateScoreMarkers: 1
+  markerScoreStep: 10
+  maxMarkerScore: 300
+  fallbackMaxHeight: 450
+  fallbackMaxScore: 300
+  fallbackStartY: 0
+  markerLineStartX: 2
+  markerLineEndX: 3
+  markerTextX: 4.5
+  markerZ: 0
+  markerLineWidth: 0.1
+  markerFontSize: 6
+  markerFontAsset: {fileID: 11400000, guid: b492d0ac973521c41bd0b8fa59ceda86, type: 2}
+  markerTextBoxSize: {x: 2, y: 1}
+  markerColor: {r: 1, g: 1, b: 1, a: 1}
+  markerSortingOrder: 20
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -436,7 +453,7 @@ MonoBehaviour:
   heightText: {fileID: 1654596110}
   jumpsText: {fileID: 245945875}
   timeLimit: 15
-  maxHeight: 450
+  maxHeight: 500
   maxScore: 300
 --- !u!1 &804929967
 GameObject:
@@ -1355,6 +1372,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 942403246}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: maxJumps
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: launchPower
       value: 40
       objectReference: {fileID: 0}
@@ -1372,7 +1393,7 @@ PrefabInstance:
       objectReference: {fileID: 942403247}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachCheckRadius
-      value: 0.5
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachedGravityScale

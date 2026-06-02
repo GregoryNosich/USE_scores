@@ -23,6 +23,9 @@ public class GameManager : MonoBehaviour
 
     public bool IsTimerStarted => isTimerStarted;
     public bool IsGameOver => isGameOver;
+    public float MaxHeight => maxHeight;
+    public float MaxScore => maxScore;
+    public float StartPlayerY => startPlayerY;
 
     private void Awake()
     {
@@ -103,6 +106,16 @@ public class GameManager : MonoBehaviour
     private float GetScore(float height)
     {
         return (height / maxHeight) * maxScore;
+    }
+
+    public float GetWorldYForScore(float score)
+    {
+        if (maxScore <= 0f)
+        {
+            return startPlayerY;
+        }
+
+        return startPlayerY + score / maxScore * maxHeight;
     }
 
     private void UpdateHeight()

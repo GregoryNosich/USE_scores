@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Rendering;
 using System;
 
 public class PlayerLauncher : MonoBehaviour
@@ -34,6 +35,9 @@ public class PlayerLauncher : MonoBehaviour
     [Header("Sprite Settings")]
     [SerializeField] private Sprite attachedSprite;
     [SerializeField] private Sprite flyingSprite;
+
+    [Header("Sorting Settings")]
+    [SerializeField] private int visualSortingOrder = 1000;
 
     private bool isAttached = true;
     private bool isDragging = false;
@@ -85,6 +89,8 @@ public class PlayerLauncher : MonoBehaviour
         {
             visualRenderer = visual.GetComponent<SpriteRenderer>();
         }
+
+        ApplyVisualSortingOrder();
 
         if (attachedSprite == null && visualRenderer != null)
         {
@@ -255,14 +261,53 @@ public class PlayerLauncher : MonoBehaviour
 
     private void FlashAttachZone(Collider2D zoneCollider)
     {
-        AttachZoneFeedback feedback = zoneCollider.GetComponent<AttachZoneFeedback>();
+        GameObject feedbackTarget = GetAttachZoneFeedbackTarget(zoneCollider);
+        AttachZoneFeedback feedback = feedbackTarget.GetComponent<AttachZoneFeedback>();
 
         if (feedback == null)
         {
-            feedback = zoneCollider.gameObject.AddComponent<AttachZoneFeedback>();
+            feedback = feedbackTarget.AddComponent<AttachZoneFeedback>();
         }
 
         feedback.Flash();
+    }
+
+    private GameObject GetAttachZoneFeedbackTarget(Collider2D zoneCollider)
+    {
+        BoostZone boostZone = zoneCollider.GetComponentInParent<BoostZone>();
+
+        if (boostZone != null)
+        {
+            return boostZone.gameObject;
+        }
+
+        Transform current = zoneCollider.transform;
+        Transform best = current;
+
+        while (current != null)
+        {
+            if (IsInLayerMask(current.gameObject.layer, obstacleLayer) ||
+                IsInLayerMask(current.gameObject.layer, boostLayer))
+            {
+                best = current;
+            }
+
+            Transform parent = current.parent;
+
+            if (parent == null || parent.GetComponent<SortingGroup>() != null)
+            {
+                break;
+            }
+
+            current = parent;
+        }
+
+        return best.gameObject;
+    }
+
+    private bool IsInLayerMask(int layer, LayerMask layerMask)
+    {
+        return (layerMask.value & (1 << layer)) != 0;
     }
 
     private void NotifyFirstAttachAfterLaunch()
@@ -405,6 +450,16 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         visualRenderer.sprite = flyingSprite;
+    }
+
+    private void ApplyVisualSortingOrder()
+    {
+        if (visualRenderer == null)
+        {
+            return;
+        }
+
+        visualRenderer.sortingOrder = visualSortingOrder;
     }
 
     private void KeepVisualTopEdgeFixed()

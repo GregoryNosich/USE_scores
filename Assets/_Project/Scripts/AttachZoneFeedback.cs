@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AttachZoneFeedback : MonoBehaviour
@@ -6,8 +7,11 @@ public class AttachZoneFeedback : MonoBehaviour
     [SerializeField] private float flashDuration = 1f;
     [SerializeField] private float brightnessMultiplier = 1.8f;
 
+    private const float ScaleMultiplier = 1.08f;
+
     private SpriteRenderer[] renderers;
     private Color[] baseColors;
+    private Vector3[] baseScales;
     private Coroutine flashRoutine;
 
     private void Awake()
@@ -35,13 +39,40 @@ public class AttachZoneFeedback : MonoBehaviour
 
     private void CacheRenderers()
     {
-        renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        SpriteRenderer[] allRenderers = GetComponentsInChildren<SpriteRenderer>(true);
+        renderers = GetVisualRenderers(allRenderers);
         baseColors = new Color[renderers.Length];
+        baseScales = new Vector3[renderers.Length];
 
         for (int i = 0; i < renderers.Length; i++)
         {
             baseColors[i] = renderers[i].color;
+            baseScales[i] = renderers[i].transform.localScale;
         }
+    }
+
+    private SpriteRenderer[] GetVisualRenderers(SpriteRenderer[] allRenderers)
+    {
+        List<SpriteRenderer> visualRenderers = new List<SpriteRenderer>();
+
+        for (int i = 0; i < allRenderers.Length; i++)
+        {
+            SpriteRenderer spriteRenderer = allRenderers[i];
+
+            if (spriteRenderer == null || spriteRenderer.transform == transform)
+            {
+                continue;
+            }
+
+            visualRenderers.Add(spriteRenderer);
+        }
+
+        if (visualRenderers.Count > 0)
+        {
+            return visualRenderers.ToArray();
+        }
+
+        return allRenderers;
     }
 
     private IEnumerator FlashRoutine()
@@ -64,6 +95,11 @@ public class AttachZoneFeedback : MonoBehaviour
 
                 Color brightColor = GetBrightColor(baseColors[i]);
                 renderers[i].color = Color.Lerp(brightColor, baseColors[i], t);
+                renderers[i].transform.localScale = Vector3.Lerp(
+                    baseScales[i] * ScaleMultiplier,
+                    baseScales[i],
+                    t
+                );
             }
 
             yield return null;
@@ -80,6 +116,7 @@ public class AttachZoneFeedback : MonoBehaviour
             if (renderers[i] != null)
             {
                 renderers[i].color = GetBrightColor(baseColors[i]);
+                renderers[i].transform.localScale = baseScales[i] * ScaleMultiplier;
             }
         }
     }
@@ -87,9 +124,9 @@ public class AttachZoneFeedback : MonoBehaviour
     private Color GetBrightColor(Color color)
     {
         return new Color(
-            Mathf.Clamp01(color.r * brightnessMultiplier),
-            Mathf.Clamp01(color.g * brightnessMultiplier),
-            Mathf.Clamp01(color.b * brightnessMultiplier),
+            color.r * brightnessMultiplier,
+            color.g * brightnessMultiplier,
+            color.b * brightnessMultiplier,
             color.a
         );
     }
@@ -107,7 +144,7 @@ public class AttachZoneFeedback : MonoBehaviour
 
     private void RestoreBaseColors()
     {
-        if (renderers == null || baseColors == null)
+        if (renderers == null || baseColors == null || baseScales == null)
         {
             return;
         }
@@ -117,6 +154,7 @@ public class AttachZoneFeedback : MonoBehaviour
             if (renderers[i] != null)
             {
                 renderers[i].color = baseColors[i];
+                renderers[i].transform.localScale = baseScales[i];
             }
         }
     }

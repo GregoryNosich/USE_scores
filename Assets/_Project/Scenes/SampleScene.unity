@@ -156,8 +156,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 150, y: -120}
-  m_SizeDelta: {x: 250, y: 30}
+  m_AnchoredPosition: {x: 301.8365, y: -256.17505}
+  m_SizeDelta: {x: 550, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &245945875
 MonoBehaviour:
@@ -206,8 +206,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 48
+  m_fontSizeBase: 48
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -305,7 +305,7 @@ MonoBehaviour:
   backgroundPrefab: {fileID: 6923347790055899842, guid: a3cf377031bf0ed4681b80401ea2b244, type: 3}
   gameManager: {fileID: 519420034}
   piecesCount: 100
-  startY: 23.77
+  startY: 23.27
   xPosition: 0
   zPosition: 1
   overlap: 0.01
@@ -454,6 +454,7 @@ MonoBehaviour:
   jumpsText: {fileID: 245945875}
   tutorialObject: {fileID: 1581510496}
   timeLimit: 15
+  lowTimeWarningThreshold: 3
   maxHeight: 500
   maxScore: 300
 --- !u!1 &804929967
@@ -649,7 +650,7 @@ Transform:
   m_GameObject: {fileID: 1109119134}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 4.75, z: 1}
+  m_LocalPosition: {x: 0, y: 4.25, z: 1}
   m_LocalScale: {x: 0.77, y: 0.76, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -779,8 +780,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 150, y: -40}
-  m_SizeDelta: {x: 250, y: 30}
+  m_AnchoredPosition: {x: 301.8365, y: -158.8382}
+  m_SizeDelta: {x: 550, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1479445669
 MonoBehaviour:
@@ -829,8 +830,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 48
+  m_fontSizeBase: 48
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1041,7 +1042,7 @@ Transform:
   m_GameObject: {fileID: 1635492836}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 16.220001, z: 0}
+  m_LocalPosition: {x: 0, y: 15.72, z: 0}
   m_LocalScale: {x: 0.77, y: 0.77, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1133,8 +1134,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 150, y: -80}
-  m_SizeDelta: {x: 250, y: 30}
+  m_AnchoredPosition: {x: 301.8365, y: -61.5013}
+  m_SizeDelta: {x: 550, y: 75}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1654596110
 MonoBehaviour:
@@ -1183,8 +1184,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 48
+  m_fontSizeBase: 48
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1406,7 +1407,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4538970429754719696, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1.21
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 4538970429754719696, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: m_LocalPosition.z

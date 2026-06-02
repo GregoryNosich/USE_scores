@@ -14,11 +14,13 @@ public class GameManager : MonoBehaviour
 
     [Header("Timer Settings")]
     [SerializeField] private float timeLimit = 15f;
+    [SerializeField] private float lowTimeWarningThreshold = 3f;
     [SerializeField] private float maxHeight = 80f;
     [SerializeField] private float maxScore = 300f;
 
     private float timeLeft;
     private float startPlayerY;
+    private Color timerTextBaseColor;
     private Color jumpsTextBaseColor;
     private Coroutine jumpsTextFlashRoutine;
 
@@ -53,6 +55,11 @@ public class GameManager : MonoBehaviour
         if (tutorialObject == null)
         {
             tutorialObject = GameObject.Find("Tutorial");
+        }
+
+        if (timerText != null)
+        {
+            timerTextBaseColor = timerText.color;
         }
 
         if (jumpsText != null)
@@ -116,6 +123,7 @@ public class GameManager : MonoBehaviour
         if (timerText != null)
         {
             timerText.text = $"Осталось {timeLeft:F1} секунд";
+            timerText.color = timeLeft <= lowTimeWarningThreshold ? Color.red : timerTextBaseColor;
         }
     }
 

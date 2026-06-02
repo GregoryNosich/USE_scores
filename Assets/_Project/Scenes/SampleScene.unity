@@ -452,6 +452,7 @@ MonoBehaviour:
   timerText: {fileID: 1479445669}
   heightText: {fileID: 1654596110}
   jumpsText: {fileID: 245945875}
+  tutorialObject: {fileID: 1581510496}
   timeLimit: 15
   maxHeight: 500
   maxScore: 300

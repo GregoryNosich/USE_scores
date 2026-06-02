@@ -4,6 +4,8 @@ using System;
 public class PlayerLauncher : MonoBehaviour
 {
     public event Action OnFirstLaunch;
+    public event Action OnFirstAttachAfterLaunch;
+    public event Action OnJumpAttemptWithoutJumps;
     public event Action<int> OnJumpsRemainingChanged;
 
     [Header("References")]
@@ -37,6 +39,7 @@ public class PlayerLauncher : MonoBehaviour
     private bool isDragging = false;
     private bool inputEnabled = true;
     private bool hasLaunchedOnce = false;
+    private bool hasAttachedAfterFirstLaunch = false;
     private bool jumpCounterInitialized = false;
 
     private Vector2 dragStartWorld;
@@ -126,6 +129,11 @@ public class PlayerLauncher : MonoBehaviour
     {
         if (!HasJumpsRemaining)
         {
+            if (Input.GetMouseButtonDown(0))
+            {
+                OnJumpAttemptWithoutJumps?.Invoke();
+            }
+
             ReturnVisualToNormal();
             return;
         }
@@ -242,6 +250,7 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         AttachToPoleWithoutChecks();
+        NotifyFirstAttachAfterLaunch();
     }
 
     private void FlashAttachZone(Collider2D zoneCollider)
@@ -254,6 +263,17 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         feedback.Flash();
+    }
+
+    private void NotifyFirstAttachAfterLaunch()
+    {
+        if (!hasLaunchedOnce || hasAttachedAfterFirstLaunch)
+        {
+            return;
+        }
+
+        hasAttachedAfterFirstLaunch = true;
+        OnFirstAttachAfterLaunch?.Invoke();
     }
 
     private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false)

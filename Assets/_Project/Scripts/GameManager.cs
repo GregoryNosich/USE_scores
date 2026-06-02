@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 
@@ -9,6 +10,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private TMP_Text heightText;
     [SerializeField] private TMP_Text jumpsText;
+    [SerializeField] private GameObject tutorialObject;
 
     [Header("Timer Settings")]
     [SerializeField] private float timeLimit = 15f;
@@ -17,6 +19,8 @@ public class GameManager : MonoBehaviour
 
     private float timeLeft;
     private float startPlayerY;
+    private Color jumpsTextBaseColor;
+    private Coroutine jumpsTextFlashRoutine;
 
     private bool isTimerStarted = false;
     private bool isGameOver = false;
@@ -40,8 +44,20 @@ public class GameManager : MonoBehaviour
         {
             playerLauncher.SetInputEnabled(true);
             playerLauncher.OnFirstLaunch += StartTimer;
+            playerLauncher.OnFirstAttachAfterLaunch += HideTutorial;
+            playerLauncher.OnJumpAttemptWithoutJumps += FlashJumpsTextRed;
             playerLauncher.OnJumpsRemainingChanged += UpdateJumpsText;
             UpdateJumpsText(playerLauncher.JumpsRemaining);
+        }
+
+        if (tutorialObject == null)
+        {
+            tutorialObject = GameObject.Find("Tutorial");
+        }
+
+        if (jumpsText != null)
+        {
+            jumpsTextBaseColor = jumpsText.color;
         }
 
         UpdateTimerText();
@@ -156,6 +172,43 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void HideTutorial()
+    {
+        if (tutorialObject != null)
+        {
+            tutorialObject.SetActive(false);
+        }
+    }
+
+    private void FlashJumpsTextRed()
+    {
+        if (jumpsText == null)
+        {
+            return;
+        }
+
+        if (jumpsTextFlashRoutine != null)
+        {
+            StopCoroutine(jumpsTextFlashRoutine);
+        }
+
+        jumpsTextFlashRoutine = StartCoroutine(FlashJumpsTextRedRoutine());
+    }
+
+    private IEnumerator FlashJumpsTextRedRoutine()
+    {
+        jumpsText.color = Color.red;
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (jumpsText != null)
+        {
+            jumpsText.color = jumpsTextBaseColor;
+        }
+
+        jumpsTextFlashRoutine = null;
+    }
+
     private void EndGame()
     {
         isGameOver = true;
@@ -171,6 +224,8 @@ public class GameManager : MonoBehaviour
         if (playerLauncher != null)
         {
             playerLauncher.OnFirstLaunch -= StartTimer;
+            playerLauncher.OnFirstAttachAfterLaunch -= HideTutorial;
+            playerLauncher.OnJumpAttemptWithoutJumps -= FlashJumpsTextRed;
             playerLauncher.OnJumpsRemainingChanged -= UpdateJumpsText;
         }
     }

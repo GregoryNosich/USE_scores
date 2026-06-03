@@ -28,9 +28,6 @@ public class BackgroundGenerator : MonoBehaviour
     [SerializeField] private bool generateScoreMarkers = true;
     [SerializeField] private int markerScoreStep = 10;
     [SerializeField] private int maxMarkerScore = 300;
-    [SerializeField] private float fallbackMaxHeight = 450f;
-    [SerializeField] private float fallbackMaxScore = 300f;
-    [SerializeField] private float fallbackStartY = 0f;
     [SerializeField] private float markerLineStartX = 2.5f;
     [SerializeField] private float markerLineEndX = 3f;
     [SerializeField] private float markerTextX = 3.15f;
@@ -163,11 +160,6 @@ public class BackgroundGenerator : MonoBehaviour
             return;
         }
 
-        if (parallaxCamera == null && Camera.main != null)
-        {
-            parallaxCamera = Camera.main.transform;
-        }
-
         if (parallaxCamera == null)
         {
             return;
@@ -216,12 +208,11 @@ public class BackgroundGenerator : MonoBehaviour
 
         if (gameManager == null)
         {
-            gameManager = FindObjectOfType<GameManager>();
+            Debug.LogWarning("Score markers cannot be generated because GameManager is not assigned.");
+            return;
         }
 
-        float gameplayMaxScore = gameManager != null ? gameManager.MaxScore : fallbackMaxScore;
-        float gameplayMaxHeight = gameManager != null ? gameManager.MaxHeight : fallbackMaxHeight;
-        float startWorldY = gameManager != null ? gameManager.StartPlayerY : fallbackStartY;
+        float gameplayMaxScore = gameManager.MaxScore;
 
         if (gameplayMaxScore <= 0f)
         {
@@ -236,10 +227,7 @@ public class BackgroundGenerator : MonoBehaviour
 
         for (int score = markerScoreStep; score <= lastScore; score += markerScoreStep)
         {
-            float markerY = gameManager != null
-                ? gameManager.GetWorldYForScore(score)
-                : startWorldY + score / gameplayMaxScore * gameplayMaxHeight;
-
+            float markerY = gameManager.GetWorldYForScore(score);
             CreateMarkerLine(markersParent, score, markerY);
             CreateMarkerText(markersParent, score, markerY);
         }

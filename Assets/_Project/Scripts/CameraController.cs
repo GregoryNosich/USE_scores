@@ -10,7 +10,9 @@ public class CameraController : MonoBehaviour
     private void LateUpdate()
     {
         if (target == null)
+        {
             return;
+        }
 
         float targetY = Mathf.Max(minY, target.position.y + yOffset);
 

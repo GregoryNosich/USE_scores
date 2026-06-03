@@ -111,6 +111,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 6312195113834622365}
   visual: {fileID: 0}
+  inputCamera: {fileID: 0}
   maxDragDistance: 2.5
   launchPower: 12
   attachedGravityScale: 0
@@ -132,9 +133,6 @@ MonoBehaviour:
   blinkIntervalRange: {x: 2, y: 3}
   blinkDuration: 0.12
   visualSortingOrder: 1000
-  oneShotAudioSource: {fileID: 0}
-  flyAudioSource: {fileID: 0}
-  stretchAudioSource: {fileID: 0}
   flyClip: {fileID: 8300000, guid: a09204f5d8bf28b46b86d82c97483965, type: 3}
   stretchClip: {fileID: 8300000, guid: 918c0c9ac89342a4bb4eab952df144f9, type: 3}
   stickClip: {fileID: 8300000, guid: d65ad59d980d33345a535afa15c346aa, type: 3}

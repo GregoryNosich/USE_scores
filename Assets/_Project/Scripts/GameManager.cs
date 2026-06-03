@@ -1,47 +1,65 @@
 using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    [Header("References")]
+    [Header("Gameplay")]
     [SerializeField] private Transform player;
     [SerializeField] private PlayerLauncher playerLauncher;
-    [SerializeField] private TMP_Text timerText;
+    [SerializeField] private float timeLimit = 15f;
+    [SerializeField] private float lowTimeWarningThreshold = 3f;
+    [SerializeField] private float maxHeight = 600f;
+    [SerializeField] private float maxScore = 300f;
+
+    [Header("Run HUD")]
+    [SerializeField] private TMP_Text minuteTensText;
+    [SerializeField] private TMP_Text minuteOnesText;
+    [SerializeField] private TMP_Text dotsText;
+    [SerializeField] private TMP_Text secondTensText;
+    [SerializeField] private TMP_Text secondOnesText;
     [SerializeField] private TMP_Text heightText;
-    [SerializeField] private TMP_Text jumpsText;
-    [SerializeField] private GameObject tutorialObject;
+    [SerializeField] private RectTransform timePanel;
+    [SerializeField] private RectTransform scorePanel;
+    [SerializeField] private float hudPanelAppearDuration = 0.45f;
+    [SerializeField] private float hudPanelStartOffsetY = 120f;
+    [SerializeField] private float hudPanelBounceDistance = 14f;
+
+    [Header("Screens")]
+    [SerializeField] private GameObject startScreenRoot;
+    [SerializeField] private Button startScreenButton;
+    [SerializeField] private GameObject endScreenRoot;
+    [SerializeField] private TMP_Text endScreenResultText;
+    [SerializeField] private Button restartButton;
+    [SerializeField] private Button exitButton;
 
     [Header("Tutorial Animation")]
+    [SerializeField] private Canvas uiCanvas;
     [SerializeField] private Sprite[] dragTutorialFrames;
     [SerializeField] private Sprite[] tapTutorialFrames;
     [SerializeField] private float tutorialFrameRate = 12f;
     [SerializeField] private float tutorialImageHeight = 220f;
-    [SerializeField] private Vector2 tutorialFallbackAnchoredPosition = new Vector2(-360f, 0f);
+    [SerializeField] private Vector2 tutorialAnchoredPosition = new Vector2(-360f, 0f);
     [SerializeField] private int dragPullStartFrame = 4;
     [SerializeField] private float dragPullDownDistance = 120f;
 
-    [Header("End Screen")]
-    [SerializeField] private GameObject endScreenRoot;
-    [SerializeField] private TMP_Text endScreenText;
-    [SerializeField] private Button endScreenButton;
-
-    [Header("Timer Settings")]
-    [SerializeField] private float timeLimit = 15f;
-    [SerializeField] private float lowTimeWarningThreshold = 3f;
-    [SerializeField] private float maxHeight = 80f;
-    [SerializeField] private float maxScore = 300f;
-
-    [Header("Audio Settings")]
-    [SerializeField] private AudioSource audioSource;
+    [Header("Audio")]
     [SerializeField] private AudioClip gameOverWarningClip;
     [Min(0f)]
-    [SerializeField] private float gameOverWarningVolume = 1f;
+    [SerializeField] private float gameOverWarningVolume = 0.8f;
+
+    [Header("Music")]
+    [SerializeField] private AudioClip musicClip;
+    [Min(0f)]
+    [SerializeField] private float musicVolume = 0.15f;
+
+    private readonly TMP_Text[] timerParts = new TMP_Text[5];
+    private readonly Color[] timerPartBaseColors = new Color[5];
 
     private float timeLeft;
     private float startPlayerY;
-    private Color timerTextBaseColor;
+
     private Image tutorialAnimationImage;
     private Sprite[] activeTutorialFrames;
     private float tutorialFrameTimer;
@@ -49,12 +67,17 @@ public class GameManager : MonoBehaviour
     private Vector2 tutorialBaseAnchoredPosition;
     private bool isDragTutorialActive;
 
-    private bool isTimerStarted = false;
-    private bool isGameOver = false;
-    private bool hasPlayedGameOverWarningSound = false;
+    private Vector2 timePanelBasePosition;
+    private Vector2 scorePanelBasePosition;
+    private float hudPanelAppearTimer;
+    private bool isHudPanelAnimationActive;
 
-    public bool IsTimerStarted => isTimerStarted;
-    public bool IsGameOver => isGameOver;
+    private bool isStartScreenVisible;
+    private bool isTimerStarted;
+    private bool isGameOver;
+    private bool hasPlayedGameOverWarningSound;
+    private AudioSource sfxAudioSource;
+
     public float MaxHeight => maxHeight;
     public float MaxScore => maxScore;
     public float StartPlayerY => startPlayerY;
@@ -62,39 +85,28 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         timeLeft = timeLimit;
+        startPlayerY = player != null ? player.position.y : 0f;
 
-        if (player != null)
-        {
-            startPlayerY = player.position.y;
-        }
-
-        if (playerLauncher != null)
-        {
-            playerLauncher.SetInputEnabled(true);
-            playerLauncher.OnFirstLaunch += StartTimer;
-            playerLauncher.OnFirstAttachAfterLaunch += HideTutorial;
-            playerLauncher.OnObstacleZoneAttachAttempt += EndGame;
-        }
-
-        if (tutorialObject == null)
-        {
-            tutorialObject = GameObject.Find("Tutorial");
-        }
-
-        HideTextTutorial();
-        ShowDragTutorial();
-
-        if (timerText != null)
-        {
-            timerTextBaseColor = timerText.color;
-        }
+        SubscribePlayerEvents();
+        CacheTimerParts();
+        CacheHudPanelPositions();
+        ConfigureButtons();
 
         UpdateTimerText();
         UpdateHeight();
-        SetRunTextVisible(false);
-        EnsureAudioSource();
-        EnsureEndScreen();
+        SetRunHudVisible(false);
         SetEndScreenVisible(false);
+        EnsureMusic();
+        CreateSfxAudioSource();
+
+        if (startScreenRoot != null)
+        {
+            ShowStartScreen();
+        }
+        else
+        {
+            StartGame();
+        }
     }
 
     private void Update()
@@ -104,13 +116,113 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        if (isStartScreenVisible)
+        {
+            UpdateHeight();
+            return;
+        }
+
         if (isTimerStarted)
         {
             UpdateTimer();
         }
 
         UpdateHeight();
+        UpdateRunHudPanelAnimation();
         UpdateTutorialAnimation();
+    }
+
+    private void SubscribePlayerEvents()
+    {
+        if (playerLauncher == null)
+        {
+            return;
+        }
+
+        playerLauncher.OnFirstLaunch += StartTimer;
+        playerLauncher.OnFirstAttachAfterLaunch += HideTutorial;
+        playerLauncher.OnObstacleZoneAttachAttempt += EndGame;
+    }
+
+    private void CacheTimerParts()
+    {
+        timerParts[0] = minuteTensText;
+        timerParts[1] = minuteOnesText;
+        timerParts[2] = dotsText;
+        timerParts[3] = secondTensText;
+        timerParts[4] = secondOnesText;
+
+        for (int i = 0; i < timerParts.Length; i++)
+        {
+            timerPartBaseColors[i] = timerParts[i] != null ? timerParts[i].color : Color.white;
+        }
+    }
+
+    private void CacheHudPanelPositions()
+    {
+        if (timePanel != null)
+        {
+            timePanelBasePosition = timePanel.anchoredPosition;
+        }
+
+        if (scorePanel != null)
+        {
+            scorePanelBasePosition = scorePanel.anchoredPosition;
+        }
+    }
+
+    private void ConfigureButtons()
+    {
+        if (startScreenButton != null)
+        {
+            startScreenButton.onClick.RemoveListener(StartGame);
+            startScreenButton.onClick.AddListener(StartGame);
+        }
+
+        if (restartButton != null)
+        {
+            restartButton.onClick = new Button.ButtonClickedEvent();
+            restartButton.onClick.AddListener(RestartGame);
+        }
+
+        if (exitButton != null)
+        {
+            exitButton.onClick = new Button.ButtonClickedEvent();
+        }
+    }
+
+    private void ShowStartScreen()
+    {
+        isStartScreenVisible = true;
+        startScreenRoot.SetActive(true);
+        HideTutorial();
+
+        if (playerLauncher != null)
+        {
+            playerLauncher.SetInputEnabled(false);
+        }
+    }
+
+    private void StartGame()
+    {
+        if (isGameOver)
+        {
+            return;
+        }
+
+        isStartScreenVisible = false;
+
+        if (startScreenRoot != null)
+        {
+            startScreenRoot.SetActive(false);
+        }
+
+        if (playerLauncher != null)
+        {
+            playerLauncher.SetInputEnabled(true);
+        }
+
+        ShowDragTutorial();
     }
 
     private void StartTimer()
@@ -121,7 +233,7 @@ public class GameManager : MonoBehaviour
         }
 
         isTimerStarted = true;
-        SetRunTextVisible(true);
+        SetRunHudVisible(true);
         UpdateTimerText();
         UpdateHeight();
         ShowTapTutorial();
@@ -145,72 +257,51 @@ public class GameManager : MonoBehaviour
         UpdateTimerText();
     }
 
-    private void EnsureAudioSource()
-    {
-        if (audioSource == null)
-        {
-            audioSource = GetComponent<AudioSource>();
-        }
-
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
-
-        audioSource.playOnAwake = false;
-        audioSource.loop = false;
-    }
-
-    private void PlayGameOverWarningSound()
-    {
-        if (hasPlayedGameOverWarningSound)
-        {
-            return;
-        }
-
-        hasPlayedGameOverWarningSound = true;
-
-        PlayOneShotScaled(audioSource, gameOverWarningClip, gameOverWarningVolume);
-    }
-
-    private void PlayOneShotScaled(AudioSource source, AudioClip clip, float volume)
-    {
-        if (source == null || clip == null || volume <= 0f)
-        {
-            return;
-        }
-
-        float remainingVolume = volume;
-
-        while (remainingVolume > 0f)
-        {
-            float layerVolume = Mathf.Min(remainingVolume, 1f);
-            source.PlayOneShot(clip, layerVolume);
-            remainingVolume -= layerVolume;
-        }
-    }
-
     private void UpdateTimerText()
     {
-        if (timerText != null)
-        {
-            timerText.text = $"{FormatTime(timeLeft)}";
-            timerText.color = timeLeft <= lowTimeWarningThreshold ? Color.red : timerTextBaseColor;
-        }
+        int totalSeconds = Mathf.CeilToInt(Mathf.Max(0f, timeLeft));
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        bool isLowTime = timeLeft <= lowTimeWarningThreshold;
+
+        SetTimerPart(0, (minutes / 10).ToString(), isLowTime);
+        SetTimerPart(1, (minutes % 10).ToString(), isLowTime);
+        SetTimerPart(2, ":", isLowTime);
+        SetTimerPart(3, (seconds / 10).ToString(), isLowTime);
+        SetTimerPart(4, (seconds % 10).ToString(), isLowTime);
     }
 
-    private string FormatTime(float seconds)
+    private void SetTimerPart(int index, string value, bool isLowTime)
     {
-        int totalSeconds = Mathf.CeilToInt(Mathf.Max(0f, seconds));
-        int minutes = totalSeconds / 60;
-        int remainingSeconds = totalSeconds % 60;
+        TMP_Text text = timerParts[index];
 
-        return $"{minutes:00}:{remainingSeconds:00}";
+        if (text == null)
+        {
+            return;
+        }
+
+        text.text = value;
+        text.color = isLowTime ? Color.red : timerPartBaseColors[index];
+    }
+
+    private void UpdateHeight()
+    {
+        if (player == null || heightText == null)
+        {
+            return;
+        }
+
+        heightText.text = Mathf.RoundToInt(GetCurrentScore()).ToString();
     }
 
     private float GetScore(float height)
     {
-        return (height / maxHeight) * maxScore;
+        if (maxHeight <= 0f)
+        {
+            return 0f;
+        }
+
+        return height / maxHeight * maxScore;
     }
 
     private float GetCurrentScore()
@@ -234,54 +325,94 @@ public class GameManager : MonoBehaviour
         return startPlayerY + score / maxScore * maxHeight;
     }
 
-    private void UpdateHeight()
+    private void SetRunHudVisible(bool visible)
     {
-        if (player == null || heightText == null)
-        {
-            return;
-        }
-
-        float height = Mathf.Max(0f, player.position.y - startPlayerY);
-        float score = GetScore(height);
-        heightText.text = $"{Mathf.RoundToInt(score)}";
-    }
-
-    private void SetRunTextVisible(bool visible)
-    {
-        if (timerText != null)
-        {
-            timerText.gameObject.SetActive(visible);
-        }
+        SetTimerPartsVisible(visible);
 
         if (heightText != null)
         {
             heightText.gameObject.SetActive(visible);
         }
 
-        if (jumpsText != null)
+        SetRunHudPanelsVisible(visible, visible);
+    }
+
+    private void SetTimerPartsVisible(bool visible)
+    {
+        for (int i = 0; i < timerParts.Length; i++)
         {
-            jumpsText.gameObject.SetActive(false);
+            if (timerParts[i] != null)
+            {
+                timerParts[i].gameObject.SetActive(visible);
+            }
         }
     }
 
-    private void HideTutorial()
+    private void SetRunHudPanelsVisible(bool visible, bool animate)
     {
-        HideTextTutorial();
+        isHudPanelAnimationActive = visible && animate;
+        hudPanelAppearTimer = 0f;
 
-        activeTutorialFrames = null;
-        isDragTutorialActive = false;
+        SetHudPanelVisible(timePanel, timePanelBasePosition, visible, animate);
+        SetHudPanelVisible(scorePanel, scorePanelBasePosition, visible, animate);
+    }
 
-        if (tutorialAnimationImage != null)
+    private void SetHudPanelVisible(RectTransform panel, Vector2 basePosition, bool visible, bool animate)
+    {
+        if (panel == null)
         {
-            tutorialAnimationImage.gameObject.SetActive(false);
+            return;
+        }
+
+        panel.gameObject.SetActive(visible);
+        panel.anchoredPosition = visible && animate
+            ? basePosition + Vector2.up * hudPanelStartOffsetY
+            : basePosition;
+    }
+
+    private void UpdateRunHudPanelAnimation()
+    {
+        if (!isHudPanelAnimationActive)
+        {
+            return;
+        }
+
+        float duration = Mathf.Max(0.01f, hudPanelAppearDuration);
+        hudPanelAppearTimer += Time.deltaTime;
+
+        float progress = Mathf.Clamp01(hudPanelAppearTimer / duration);
+        float offsetY = GetHudPanelAppearOffsetY(progress);
+
+        ApplyHudPanelOffset(timePanel, timePanelBasePosition, offsetY);
+        ApplyHudPanelOffset(scorePanel, scorePanelBasePosition, offsetY);
+
+        if (progress >= 1f)
+        {
+            isHudPanelAnimationActive = false;
+            ApplyHudPanelOffset(timePanel, timePanelBasePosition, 0f);
+            ApplyHudPanelOffset(scorePanel, scorePanelBasePosition, 0f);
         }
     }
 
-    private void HideTextTutorial()
+    private float GetHudPanelAppearOffsetY(float progress)
     {
-        if (tutorialObject != null)
+        float easedProgress = 1f - Mathf.Pow(1f - progress, 3f);
+        float offsetY = hudPanelStartOffsetY * (1f - easedProgress);
+
+        if (progress > 0.55f)
         {
-            tutorialObject.SetActive(false);
+            float bounceProgress = (progress - 0.55f) / 0.45f;
+            offsetY -= Mathf.Sin(bounceProgress * Mathf.PI) * hudPanelBounceDistance;
+        }
+
+        return offsetY;
+    }
+
+    private void ApplyHudPanelOffset(RectTransform panel, Vector2 basePosition, float offsetY)
+    {
+        if (panel != null)
+        {
+            panel.anchoredPosition = basePosition + Vector2.up * offsetY;
         }
     }
 
@@ -314,23 +445,15 @@ public class GameManager : MonoBehaviour
         tutorialFrameTimer = 0f;
         tutorialFrameIndex = 0;
         tutorialAnimationImage.sprite = activeTutorialFrames[tutorialFrameIndex];
+        tutorialAnimationImage.gameObject.SetActive(true);
         FitTutorialAnimationImage();
         ApplyTutorialFrameOffset();
-        tutorialAnimationImage.gameObject.SetActive(true);
     }
 
     private void EnsureTutorialAnimationImage()
     {
-        if (tutorialAnimationImage != null)
+        if (tutorialAnimationImage != null || uiCanvas == null)
         {
-            return;
-        }
-
-        Canvas canvas = FindObjectOfType<Canvas>();
-
-        if (canvas == null)
-        {
-            Debug.LogWarning("Tutorial animation cannot be created because Canvas was not found.");
             return;
         }
 
@@ -341,35 +464,19 @@ public class GameManager : MonoBehaviour
             typeof(Image)
         );
 
-        tutorialAnimationObject.transform.SetParent(canvas.transform, false);
+        tutorialAnimationObject.transform.SetParent(uiCanvas.transform, false);
 
         RectTransform rectTransform = tutorialAnimationObject.GetComponent<RectTransform>();
-        RectTransform sourceRectTransform = tutorialObject != null
-            ? tutorialObject.GetComponent<RectTransform>()
-            : null;
-
-        if (sourceRectTransform != null)
-        {
-            rectTransform.anchorMin = sourceRectTransform.anchorMin;
-            rectTransform.anchorMax = sourceRectTransform.anchorMax;
-            rectTransform.pivot = sourceRectTransform.pivot;
-            rectTransform.anchoredPosition = sourceRectTransform.anchoredPosition;
-        }
-        else
-        {
-            rectTransform.anchorMin = new Vector2(1f, 0.5f);
-            rectTransform.anchorMax = new Vector2(1f, 0.5f);
-            rectTransform.pivot = new Vector2(0.5f, 0.5f);
-            rectTransform.anchoredPosition = tutorialFallbackAnchoredPosition;
-        }
-
-        tutorialBaseAnchoredPosition = rectTransform.anchoredPosition;
+        rectTransform.anchorMin = new Vector2(1f, 0.5f);
+        rectTransform.anchorMax = new Vector2(1f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = tutorialAnchoredPosition;
+        tutorialBaseAnchoredPosition = tutorialAnchoredPosition;
 
         tutorialAnimationImage = tutorialAnimationObject.GetComponent<Image>();
         tutorialAnimationImage.raycastTarget = false;
         tutorialAnimationImage.preserveAspect = true;
         tutorialAnimationImage.color = Color.white;
-
         tutorialAnimationObject.SetActive(false);
     }
 
@@ -420,8 +527,8 @@ public class GameManager : MonoBehaviour
 
         int pullFramesCount = Mathf.Max(1, activeTutorialFrames.Length - pullStartIndex - 1);
         float pullProgress = (tutorialFrameIndex - pullStartIndex) / (float)pullFramesCount;
-        Vector2 pullOffset = Vector2.down * dragPullDownDistance * pullProgress;
-        rectTransform.anchoredPosition = tutorialBaseAnchoredPosition + pullOffset;
+        rectTransform.anchoredPosition = tutorialBaseAnchoredPosition +
+            Vector2.down * dragPullDownDistance * pullProgress;
     }
 
     private void FitTutorialAnimationImage()
@@ -431,7 +538,6 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        RectTransform rectTransform = tutorialAnimationImage.rectTransform;
         Rect spriteRect = tutorialAnimationImage.sprite.rect;
 
         if (spriteRect.height <= 0f)
@@ -440,11 +546,27 @@ public class GameManager : MonoBehaviour
         }
 
         float width = tutorialImageHeight * spriteRect.width / spriteRect.height;
-        rectTransform.sizeDelta = new Vector2(width, tutorialImageHeight);
+        tutorialAnimationImage.rectTransform.sizeDelta = new Vector2(width, tutorialImageHeight);
+    }
+
+    private void HideTutorial()
+    {
+        activeTutorialFrames = null;
+        isDragTutorialActive = false;
+
+        if (tutorialAnimationImage != null)
+        {
+            tutorialAnimationImage.gameObject.SetActive(false);
+        }
     }
 
     private void EndGame()
     {
+        if (isGameOver)
+        {
+            return;
+        }
+
         isGameOver = true;
 
         if (playerLauncher != null)
@@ -453,88 +575,15 @@ public class GameManager : MonoBehaviour
         }
 
         HideTutorial();
-
         ShowEndScreen();
-    }
-
-    private void EnsureEndScreen()
-    {
-        if (endScreenRoot != null && endScreenText != null && endScreenButton != null)
-        {
-            return;
-        }
-
-        Canvas canvas = FindObjectOfType<Canvas>();
-
-        if (canvas == null)
-        {
-            Debug.LogWarning("End screen cannot be created because Canvas was not found.");
-            return;
-        }
-
-        endScreenRoot = new GameObject("EndScreen", typeof(RectTransform));
-        endScreenRoot.transform.SetParent(canvas.transform, false);
-
-        RectTransform rootRect = endScreenRoot.GetComponent<RectTransform>();
-        StretchToParent(rootRect);
-
-        GameObject panelObject = new GameObject("EndScreenDimPanel", typeof(RectTransform), typeof(Image));
-        panelObject.transform.SetParent(endScreenRoot.transform, false);
-
-        RectTransform panelRect = panelObject.GetComponent<RectTransform>();
-        StretchToParent(panelRect);
-
-        Image panelImage = panelObject.GetComponent<Image>();
-        panelImage.color = new Color(0f, 0f, 0f, 0.55f);
-
-        GameObject textObject = new GameObject("EndScreenText", typeof(RectTransform), typeof(TextMeshProUGUI));
-        textObject.transform.SetParent(endScreenRoot.transform, false);
-
-        RectTransform textRect = textObject.GetComponent<RectTransform>();
-        StretchToParent(textRect);
-        textRect.offsetMin = new Vector2(24f, 24f);
-        textRect.offsetMax = new Vector2(-24f, -24f);
-
-        endScreenText = textObject.GetComponent<TextMeshProUGUI>();
-        endScreenText.alignment = TextAlignmentOptions.Center;
-        endScreenText.fontSize = 76f;
-        endScreenText.color = Color.white;
-
-        if (heightText != null)
-        {
-            endScreenText.font = heightText.font;
-            endScreenText.fontSharedMaterial = heightText.fontSharedMaterial;
-        }
-
-        GameObject buttonObject = new GameObject("EndScreenFullscreenButton", typeof(RectTransform), typeof(Image), typeof(Button));
-        buttonObject.transform.SetParent(endScreenRoot.transform, false);
-
-        RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
-        StretchToParent(buttonRect);
-
-        Image buttonImage = buttonObject.GetComponent<Image>();
-        buttonImage.color = Color.clear;
-
-        endScreenButton = buttonObject.GetComponent<Button>();
-        endScreenButton.targetGraphic = buttonImage;
-        endScreenButton.onClick.AddListener(RestartScene);
-    }
-
-    private void StretchToParent(RectTransform rectTransform)
-    {
-        rectTransform.anchorMin = Vector2.zero;
-        rectTransform.anchorMax = Vector2.one;
-        rectTransform.offsetMin = Vector2.zero;
-        rectTransform.offsetMax = Vector2.zero;
     }
 
     private void ShowEndScreen()
     {
-        EnsureEndScreen();
-
-        if (endScreenText != null)
+        if (endScreenResultText != null)
         {
-            endScreenText.text = $"Игра окончена!\nРезультат: {Mathf.RoundToInt(GetCurrentScore())}";
+            endScreenResultText.text =
+                $"{Mathf.RoundToInt(GetCurrentScore())} \u0438\u0437 {Mathf.RoundToInt(maxScore)}";
         }
 
         SetEndScreenVisible(true);
@@ -548,13 +597,67 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void RestartScene()
+    private void RestartGame()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
+    private void CreateSfxAudioSource()
+    {
+        sfxAudioSource = gameObject.AddComponent<AudioSource>();
+
+        sfxAudioSource.playOnAwake = false;
+        sfxAudioSource.loop = false;
+    }
+
+    private void EnsureMusic()
+    {
+        if (musicClip != null)
+        {
+            MusicPlayer.Play(musicClip, musicVolume);
+        }
+    }
+
+    private void PlayGameOverWarningSound()
+    {
+        if (hasPlayedGameOverWarningSound)
+        {
+            return;
+        }
+
+        hasPlayedGameOverWarningSound = true;
+        PlayOneShotScaled(sfxAudioSource, gameOverWarningClip, gameOverWarningVolume);
+    }
+
+    private void PlayOneShotScaled(AudioSource source, AudioClip clip, float volume)
+    {
+        if (source == null || clip == null || volume <= 0f)
+        {
+            return;
+        }
+
+        float remainingVolume = volume;
+
+        while (remainingVolume > 0f)
+        {
+            float layerVolume = Mathf.Min(remainingVolume, 1f);
+            source.PlayOneShot(clip, layerVolume);
+            remainingVolume -= layerVolume;
+        }
+    }
+
     private void OnDestroy()
     {
+        if (startScreenButton != null)
+        {
+            startScreenButton.onClick.RemoveListener(StartGame);
+        }
+
+        if (restartButton != null)
+        {
+            restartButton.onClick.RemoveListener(RestartGame);
+        }
+
         if (playerLauncher != null)
         {
             playerLauncher.OnFirstLaunch -= StartTimer;

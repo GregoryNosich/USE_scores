@@ -7,27 +7,14 @@ public class GroundStretchToBackground : MonoBehaviour
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private LevelGenerator levelGenerator;
     [SerializeField] private BackgroundGenerator backgroundGenerator;
-    [SerializeField] private Transform movingAnchor;
     [SerializeField] private float minHeight = 0.1f;
 
+    private Transform movingAnchor;
     private float spriteLocalMaxY;
     private float spawnPointLocalY;
     private float fixedSpawnWorldY;
     private float topAnchorOffsetY;
     private bool initialized;
-
-    private void Reset()
-    {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-    }
-
-    private void OnValidate()
-    {
-        if (spriteRenderer == null)
-        {
-            spriteRenderer = GetComponent<SpriteRenderer>();
-        }
-    }
 
     private void LateUpdate()
     {
@@ -44,44 +31,19 @@ public class GroundStretchToBackground : MonoBehaviour
         StretchBetweenBottomAndAnchor();
     }
 
-    public void Reinitialize()
-    {
-        initialized = false;
-    }
-
     private void Initialize()
     {
-        if (spriteRenderer == null)
-        {
-            spriteRenderer = GetComponent<SpriteRenderer>();
-        }
-
         if (spriteRenderer == null || spriteRenderer.sprite == null)
         {
             return;
         }
 
-        if (levelGenerator == null)
+        if (levelGenerator == null || backgroundGenerator == null)
         {
-            levelGenerator = FindObjectOfType<LevelGenerator>();
+            return;
         }
 
-        if (backgroundGenerator == null)
-        {
-            backgroundGenerator = GetComponentInParent<BackgroundGenerator>();
-        }
-
-        if (backgroundGenerator == null)
-        {
-            backgroundGenerator = FindObjectOfType<BackgroundGenerator>();
-        }
-
-        if (movingAnchor == null)
-        {
-            movingAnchor = backgroundGenerator != null && backgroundGenerator.BackgroundPiecesParent != null
-                ? backgroundGenerator.BackgroundPiecesParent
-                : transform.parent;
-        }
+        movingAnchor = backgroundGenerator.BackgroundPiecesParent;
 
         if (movingAnchor == null)
         {
@@ -90,9 +52,7 @@ public class GroundStretchToBackground : MonoBehaviour
 
         Bounds spriteBounds = spriteRenderer.sprite.bounds;
         spriteLocalMaxY = spriteBounds.max.y;
-        fixedSpawnWorldY = levelGenerator != null
-            ? levelGenerator.StartWorldY
-            : transform.position.y;
+        fixedSpawnWorldY = levelGenerator.StartWorldY;
 
         spawnPointLocalY = transform.InverseTransformPoint(
             new Vector3(transform.position.x, fixedSpawnWorldY, transform.position.z)

@@ -13,6 +13,7 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform visual;
     [SerializeField] private SpriteRenderer visualRenderer;
+    [SerializeField] private Camera inputCamera;
 
     [Header("Launch Settings")]
     [SerializeField] private float maxDragDistance = 2.5f;
@@ -42,9 +43,6 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private int visualSortingOrder = 1000;
 
     [Header("Audio Settings")]
-    [SerializeField] private AudioSource oneShotAudioSource;
-    [SerializeField] private AudioSource flyAudioSource;
-    [SerializeField] private AudioSource stretchAudioSource;
     [SerializeField] private AudioClip flyClip;
     [SerializeField] private AudioClip stretchClip;
     [SerializeField] private AudioClip stickClip;
@@ -79,46 +77,19 @@ public class PlayerLauncher : MonoBehaviour
     private Vector3 baseVisualLocalPosition;
     private float baseVisualTopLocalY;
     private float visualTopOffset = 0.5f;
+    private bool isVisualInitialized;
     private float nextBlinkTime;
     private float blinkEndTime;
     private bool isStretchSoundActive;
     private bool isBlinking;
+    private AudioSource oneShotAudioSource;
+    private AudioSource flyAudioSource;
     private readonly List<AudioSource> stretchAudioSources = new List<AudioSource>();
-
-    private void Reset()
-    {
-        rb = GetComponent<Rigidbody2D>();
-    }
 
     private void Awake()
     {
-        if (rb == null)
-        {
-            rb = GetComponent<Rigidbody2D>();
-        }
-
-        if (visual == null)
-        {
-            Transform foundVisual = transform.Find("Visual");
-
-            if (foundVisual != null)
-            {
-                visual = foundVisual;
-            }
-        }
-
-        if (visualRenderer == null && visual != null)
-        {
-            visualRenderer = visual.GetComponent<SpriteRenderer>();
-        }
-
         ApplyVisualSortingOrder();
-        EnsureAudioSources();
-
-        if (attachedSprite == null && visualRenderer != null)
-        {
-            attachedSprite = visualRenderer.sprite;
-        }
+        CreateAudioSources();
 
         ApplyAttachedSprite();
 
@@ -127,6 +98,7 @@ public class PlayerLauncher : MonoBehaviour
             baseVisualScale = visual.localScale;
             baseVisualLocalPosition = visual.localPosition;
             baseVisualTopLocalY = GetVisualTopLocalY(baseVisualScale, baseVisualLocalPosition);
+            isVisualInitialized = true;
         }
 
         attachX = transform.position.x;
@@ -556,21 +528,17 @@ public class PlayerLauncher : MonoBehaviour
         visualRenderer.sortingOrder = visualSortingOrder;
     }
 
-    private void EnsureAudioSources()
+    private void CreateAudioSources()
     {
-        oneShotAudioSource = EnsureAudioSource(oneShotAudioSource, false);
-        flyAudioSource = EnsureAudioSource(flyAudioSource, false);
-        stretchAudioSource = EnsureAudioSource(stretchAudioSource, false);
+        oneShotAudioSource = CreateAudioSource(false);
+        flyAudioSource = CreateAudioSource(false);
         stretchAudioSources.Clear();
-        stretchAudioSources.Add(stretchAudioSource);
+        stretchAudioSources.Add(CreateAudioSource(false));
     }
 
-    private AudioSource EnsureAudioSource(AudioSource audioSource, bool loop)
+    private AudioSource CreateAudioSource(bool loop)
     {
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-        }
+        AudioSource audioSource = gameObject.AddComponent<AudioSource>();
 
         audioSource.playOnAwake = false;
         audioSource.loop = loop;
@@ -663,14 +631,13 @@ public class PlayerLauncher : MonoBehaviour
 
         if (stretchAudioSources.Count == 0 || stretchAudioSources[0] == null)
         {
-            stretchAudioSource = EnsureAudioSource(stretchAudioSource, false);
             stretchAudioSources.Clear();
-            stretchAudioSources.Add(stretchAudioSource);
+            stretchAudioSources.Add(CreateAudioSource(false));
         }
 
         while (stretchAudioSources.Count < activeSourcesCount)
         {
-            stretchAudioSources.Add(EnsureAudioSource(null, false));
+            stretchAudioSources.Add(CreateAudioSource(false));
         }
 
         return activeSourcesCount;
@@ -805,7 +772,7 @@ public class PlayerLauncher : MonoBehaviour
     private Vector2 GetMouseWorldPosition()
     {
         Vector3 mouseScreenPosition = Input.mousePosition;
-        Vector3 mouseWorldPosition = Camera.main.ScreenToWorldPoint(mouseScreenPosition);
+        Vector3 mouseWorldPosition = inputCamera.ScreenToWorldPoint(mouseScreenPosition);
 
         return new Vector2(mouseWorldPosition.x, mouseWorldPosition.y);
     }
@@ -829,7 +796,11 @@ public class PlayerLauncher : MonoBehaviour
             StopAttachedBlink(false);
             StopFlySound();
             StopStretchSound();
-            ReturnVisualToNormalInstantly();
+
+            if (isVisualInitialized)
+            {
+                ReturnVisualToNormalInstantly();
+            }
         }
     }
 

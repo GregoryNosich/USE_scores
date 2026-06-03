@@ -34,6 +34,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float maxHeight = 80f;
     [SerializeField] private float maxScore = 300f;
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip gameOverWarningClip;
+    [Min(0f)]
+    [SerializeField] private float gameOverWarningVolume = 1f;
+
     private float timeLeft;
     private float startPlayerY;
     private Color timerTextBaseColor;
@@ -48,6 +54,7 @@ public class GameManager : MonoBehaviour
 
     private bool isTimerStarted = false;
     private bool isGameOver = false;
+    private bool hasPlayedGameOverWarningSound = false;
 
     public bool IsTimerStarted => isTimerStarted;
     public bool IsGameOver => isGameOver;
@@ -95,6 +102,7 @@ public class GameManager : MonoBehaviour
         UpdateTimerText();
         UpdateHeight();
         SetRunTextVisible(false);
+        EnsureAudioSource();
         EnsureEndScreen();
         SetEndScreenVisible(false);
     }
@@ -138,6 +146,11 @@ public class GameManager : MonoBehaviour
     {
         timeLeft -= Time.deltaTime;
 
+        if (timeLeft <= lowTimeWarningThreshold)
+        {
+            PlayGameOverWarningSound();
+        }
+
         if (timeLeft <= 0f)
         {
             timeLeft = 0f;
@@ -145,6 +158,51 @@ public class GameManager : MonoBehaviour
         }
 
         UpdateTimerText();
+    }
+
+    private void EnsureAudioSource()
+    {
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+    }
+
+    private void PlayGameOverWarningSound()
+    {
+        if (hasPlayedGameOverWarningSound)
+        {
+            return;
+        }
+
+        hasPlayedGameOverWarningSound = true;
+
+        PlayOneShotScaled(audioSource, gameOverWarningClip, gameOverWarningVolume);
+    }
+
+    private void PlayOneShotScaled(AudioSource source, AudioClip clip, float volume)
+    {
+        if (source == null || clip == null || volume <= 0f)
+        {
+            return;
+        }
+
+        float remainingVolume = volume;
+
+        while (remainingVolume > 0f)
+        {
+            float layerVolume = Mathf.Min(remainingVolume, 1f);
+            source.PlayOneShot(clip, layerVolume);
+            remainingVolume -= layerVolume;
+        }
     }
 
     private void UpdateTimerText()

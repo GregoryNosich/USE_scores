@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering;
 using System;
+using System.Collections.Generic;
 
 public class PlayerLauncher : MonoBehaviour
 {
@@ -39,6 +40,31 @@ public class PlayerLauncher : MonoBehaviour
     [Header("Sorting Settings")]
     [SerializeField] private int visualSortingOrder = 1000;
 
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource oneShotAudioSource;
+    [SerializeField] private AudioSource flyAudioSource;
+    [SerializeField] private AudioSource stretchAudioSource;
+    [SerializeField] private AudioClip flyClip;
+    [SerializeField] private AudioClip stretchClip;
+    [SerializeField] private AudioClip stickClip;
+    [SerializeField] private AudioClip greenZoneClip;
+    [SerializeField] private AudioClip redZoneClip;
+    [SerializeField] private AudioClip jumpsRanOutClip;
+    [Min(0f)]
+    [SerializeField] private float flyVolume = 1f;
+    [Min(0f)]
+    [SerializeField] private float stretchVolume = 1f;
+    [Min(0f)]
+    [SerializeField] private float stretchLoopTailDuration = 0.25f;
+    [Min(0f)]
+    [SerializeField] private float stickVolume = 1f;
+    [Min(0f)]
+    [SerializeField] private float greenZoneVolume = 1f;
+    [Min(0f)]
+    [SerializeField] private float redZoneVolume = 1f;
+    [Min(0f)]
+    [SerializeField] private float jumpsRanOutVolume = 1f;
+
     private bool isAttached = true;
     private bool isDragging = false;
     private bool inputEnabled = true;
@@ -57,6 +83,8 @@ public class PlayerLauncher : MonoBehaviour
     private Vector3 baseVisualLocalPosition;
     private float baseVisualTopLocalY;
     private float visualTopOffset = 0.5f;
+    private bool isStretchSoundActive;
+    private readonly List<AudioSource> stretchAudioSources = new List<AudioSource>();
 
     public int MaxJumps => maxJumps;
     public int JumpsRemaining => jumpCounterInitialized ? jumpsRemaining : Mathf.Max(0, maxJumps);
@@ -91,6 +119,7 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         ApplyVisualSortingOrder();
+        EnsureAudioSources();
 
         if (attachedSprite == null && visualRenderer != null)
         {
@@ -109,7 +138,7 @@ public class PlayerLauncher : MonoBehaviour
         attachX = transform.position.x;
 
         ResetJumpLimit();
-        AttachToPoleWithoutChecks(true);
+        AttachToPoleWithoutChecks(true, false);
     }
 
     private void Update()
@@ -138,8 +167,10 @@ public class PlayerLauncher : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 OnJumpAttemptWithoutJumps?.Invoke();
+                PlayOneShot(jumpsRanOutClip, jumpsRanOutVolume);
             }
 
+            StopStretchSound();
             ReturnVisualToNormal();
             return;
         }
@@ -157,12 +188,14 @@ public class PlayerLauncher : MonoBehaviour
 
             float dragPower01 = GetDragPower01();
             UpdateVisualStretch(dragPower01);
+            UpdateStretchSound(dragPower01);
         }
 
         if (Input.GetMouseButtonUp(0) && isDragging)
         {
             currentDragWorld = GetMouseWorldPosition();
             isDragging = false;
+            StopStretchSound();
 
             float dragDistance = GetDragDistance();
             Launch(dragDistance);
@@ -170,6 +203,7 @@ public class PlayerLauncher : MonoBehaviour
 
         if (!isDragging)
         {
+            StopStretchSound();
             ReturnVisualToNormal();
         }
     }
@@ -204,6 +238,7 @@ public class PlayerLauncher : MonoBehaviour
 
         isAttached = false;
         ApplyFlyingSprite();
+        PlayFlySound();
 
         rb.gravityScale = flyingGravityScale;
         rb.velocity = Vector2.zero;
@@ -232,6 +267,7 @@ public class PlayerLauncher : MonoBehaviour
 
         if (obstacleCollider != null)
         {
+            PlayOneShot(redZoneClip, redZoneVolume);
             FlashAttachZone(obstacleCollider);
             return;
         }
@@ -244,6 +280,7 @@ public class PlayerLauncher : MonoBehaviour
 
         if (boostCollider != null)
         {
+            PlayOneShot(greenZoneClip, greenZoneVolume);
             FlashAttachZone(boostCollider);
 
             BoostZone boostZone = boostCollider.GetComponent<BoostZone>();
@@ -321,10 +358,17 @@ public class PlayerLauncher : MonoBehaviour
         OnFirstAttachAfterLaunch?.Invoke();
     }
 
-    private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false)
+    private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false, bool playStickSound = true)
     {
         isAttached = true;
         ApplyAttachedSprite();
+        StopFlySound();
+        StopStretchSound();
+
+        if (playStickSound)
+        {
+            PlayOneShot(stickClip, stickVolume);
+        }
 
         rb.velocity = Vector2.zero;
         rb.gravityScale = attachedGravityScale;
@@ -462,6 +506,241 @@ public class PlayerLauncher : MonoBehaviour
         visualRenderer.sortingOrder = visualSortingOrder;
     }
 
+    private void EnsureAudioSources()
+    {
+        oneShotAudioSource = EnsureAudioSource(oneShotAudioSource, false);
+        flyAudioSource = EnsureAudioSource(flyAudioSource, false);
+        stretchAudioSource = EnsureAudioSource(stretchAudioSource, false);
+        stretchAudioSources.Clear();
+        stretchAudioSources.Add(stretchAudioSource);
+    }
+
+    private AudioSource EnsureAudioSource(AudioSource audioSource, bool loop)
+    {
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+
+        audioSource.playOnAwake = false;
+        audioSource.loop = loop;
+
+        return audioSource;
+    }
+
+    private void PlayOneShot(AudioClip clip, float volume)
+    {
+        PlayOneShotScaled(oneShotAudioSource, clip, volume);
+    }
+
+    private void UpdateStretchSound(float stretchPower01)
+    {
+        if (stretchPower01 <= 0.01f)
+        {
+            StopStretchSound();
+            return;
+        }
+
+        if (stretchClip == null)
+        {
+            return;
+        }
+
+        int activeSourcesCount = EnsureStretchAudioSourcesForVolume();
+
+        if (activeSourcesCount <= 0)
+        {
+            StopStretchSound();
+            return;
+        }
+
+        ApplyStretchSourceVolumes(activeSourcesCount);
+
+        if (!isStretchSoundActive)
+        {
+            StartStretchSound(activeSourcesCount);
+            return;
+        }
+
+        LoopStretchTailIfNeeded(activeSourcesCount);
+    }
+
+    private void PlayFlySound()
+    {
+        PlayOneShotScaled(flyAudioSource, flyClip, flyVolume);
+    }
+
+    private void StopFlySound()
+    {
+        StopAudioSource(flyAudioSource);
+    }
+
+    private void StopStretchSound()
+    {
+        isStretchSoundActive = false;
+
+        for (int i = 0; i < stretchAudioSources.Count; i++)
+        {
+            StopAudioSource(stretchAudioSources[i]);
+        }
+    }
+
+    private void PlayOneShotScaled(AudioSource audioSource, AudioClip clip, float volume)
+    {
+        if (audioSource == null || clip == null || volume <= 0f)
+        {
+            return;
+        }
+
+        float remainingVolume = volume;
+
+        while (remainingVolume > 0f)
+        {
+            float layerVolume = Mathf.Min(remainingVolume, 1f);
+            audioSource.PlayOneShot(clip, layerVolume);
+            remainingVolume -= layerVolume;
+        }
+    }
+
+    private int EnsureStretchAudioSourcesForVolume()
+    {
+        int activeSourcesCount = Mathf.CeilToInt(Mathf.Max(0f, stretchVolume));
+
+        if (activeSourcesCount <= 0)
+        {
+            return 0;
+        }
+
+        if (stretchAudioSources.Count == 0 || stretchAudioSources[0] == null)
+        {
+            stretchAudioSource = EnsureAudioSource(stretchAudioSource, false);
+            stretchAudioSources.Clear();
+            stretchAudioSources.Add(stretchAudioSource);
+        }
+
+        while (stretchAudioSources.Count < activeSourcesCount)
+        {
+            stretchAudioSources.Add(EnsureAudioSource(null, false));
+        }
+
+        return activeSourcesCount;
+    }
+
+    private void ApplyStretchSourceVolumes(int activeSourcesCount)
+    {
+        for (int i = 0; i < stretchAudioSources.Count; i++)
+        {
+            AudioSource source = stretchAudioSources[i];
+
+            if (source == null)
+            {
+                continue;
+            }
+
+            if (i >= activeSourcesCount)
+            {
+                StopAudioSource(source);
+                continue;
+            }
+
+            source.volume = GetLayerVolume(stretchVolume, i);
+        }
+    }
+
+    private float GetLayerVolume(float totalVolume, int layerIndex)
+    {
+        return Mathf.Clamp01(totalVolume - layerIndex);
+    }
+
+    private void StartStretchSound(int activeSourcesCount)
+    {
+        isStretchSoundActive = true;
+        PlayStretchSourcesFrom(0f, activeSourcesCount);
+    }
+
+    private void LoopStretchTailIfNeeded(int activeSourcesCount)
+    {
+        AudioSource referenceSource = stretchAudioSources[0];
+        float loopStartTime = GetStretchLoopStartTime();
+
+        if (referenceSource == null || !referenceSource.isPlaying)
+        {
+            PlayStretchSourcesFrom(loopStartTime, activeSourcesCount);
+            return;
+        }
+
+        if (referenceSource.time >= stretchClip.length - 0.02f)
+        {
+            PlayStretchSourcesFrom(loopStartTime, activeSourcesCount);
+            return;
+        }
+
+        SyncMissingStretchSources(referenceSource.time, activeSourcesCount);
+    }
+
+    private void PlayStretchSourcesFrom(float time, int activeSourcesCount)
+    {
+        for (int i = 0; i < stretchAudioSources.Count; i++)
+        {
+            AudioSource source = stretchAudioSources[i];
+
+            if (source == null)
+            {
+                continue;
+            }
+
+            if (i >= activeSourcesCount)
+            {
+                StopAudioSource(source);
+                continue;
+            }
+
+            source.loop = false;
+            source.clip = stretchClip;
+            source.time = time;
+            source.Play();
+        }
+    }
+
+    private void SyncMissingStretchSources(float time, int activeSourcesCount)
+    {
+        for (int i = 0; i < activeSourcesCount; i++)
+        {
+            AudioSource source = stretchAudioSources[i];
+
+            if (source == null || source.isPlaying)
+            {
+                continue;
+            }
+
+            source.loop = false;
+            source.clip = stretchClip;
+            source.time = time;
+            source.Play();
+        }
+    }
+
+    private float GetStretchLoopStartTime()
+    {
+        if (stretchClip == null || stretchClip.length <= 0f)
+        {
+            return 0f;
+        }
+
+        float tailDuration = Mathf.Max(0.01f, stretchLoopTailDuration);
+        float maxLoopStartTime = Mathf.Max(0f, stretchClip.length - 0.01f);
+
+        return Mathf.Clamp(stretchClip.length - tailDuration, 0f, maxLoopStartTime);
+    }
+
+    private void StopAudioSource(AudioSource audioSource)
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
+    }
+
     private void KeepVisualTopEdgeFixed()
     {
         float targetLocalY = baseVisualTopLocalY - visualTopOffset * visual.localScale.y;
@@ -497,6 +776,8 @@ public class PlayerLauncher : MonoBehaviour
         if (!inputEnabled)
         {
             isDragging = false;
+            StopFlySound();
+            StopStretchSound();
             ReturnVisualToNormalInstantly();
         }
     }
@@ -509,6 +790,8 @@ public class PlayerLauncher : MonoBehaviour
 
         rb.velocity = Vector2.zero;
         rb.gravityScale = 0f;
+        StopFlySound();
+        StopStretchSound();
 
         ReturnVisualToNormalInstantly();
     }

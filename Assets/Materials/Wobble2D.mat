@@ -31,7 +31,7 @@ Material:
     m_Floats:
     - _BUILTIN_QueueControl: 0
     - _BUILTIN_QueueOffset: 0
-    - _Scale: 20
+    - _Scale: 10
     - _Speed: 3
     - _Strength: 0.03
     m_Colors: []

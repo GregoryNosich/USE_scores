@@ -489,6 +489,9 @@ MonoBehaviour:
   lowTimeWarningThreshold: 3
   maxHeight: 500
   maxScore: 300
+  audioSource: {fileID: 0}
+  gameOverWarningClip: {fileID: 8300000, guid: 1f6e618c01a214c42a04ca5daadfd214, type: 3}
+  gameOverWarningVolume: 1
 --- !u!1 &742212923
 GameObject:
   m_ObjectHideFlags: 0
@@ -1542,17 +1545,49 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 942403246}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: flyClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0441047dc69d7f442ad9f3245f3edfa5, type: 3}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: maxJumps
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: flyVolume
+      value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: launchPower
       value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: stretchClip
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: flyingSprite
       value: 
       objectReference: {fileID: 21300000, guid: 63b4aaa61ae1de44888f5fe56b614aa2, type: 3}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: stickVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: greenZoneVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: redZoneVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: jumpsRanOutVolume
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: stretchVolume
+      value: 0.3
+      objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachedSprite
       value: 
@@ -1567,6 +1602,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachedGravityScale
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: stretchLoopTailDuration
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4538970429754719696, guid: 3345403601c22594e86ab018b2b7acce, type: 3}

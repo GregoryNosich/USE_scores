@@ -125,7 +125,7 @@ public class LevelGenerator : MonoBehaviour
 
     private int GetChunkSortingOrder(int chunkIndex)
     {
-        return chunkBaseSortingOrder - chunkIndex * chunkSortingOrderStep;
+        return chunkBaseSortingOrder + chunkIndex * chunkSortingOrderStep;
     }
 
     private Transform FindZoneRoot(

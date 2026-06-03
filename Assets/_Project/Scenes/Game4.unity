@@ -2563,7 +2563,7 @@ MonoBehaviour:
   - {fileID: 284369688071109445, guid: fa99b8f811c335f4bb687e9f403a2f41, type: 3}
   - {fileID: 8896878722327563537, guid: 6e810285b8acd0c478a172423e2b42bf, type: 3}
   startY: -2
-  chunkHeight: 10
+  chunkHeight: 9.5
   chunksCount: 100
   generateOnStart: 1
   avoidRepeatingSameChunk: 1

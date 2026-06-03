@@ -320,13 +320,13 @@ MonoBehaviour:
   fallbackMaxHeight: 450
   fallbackMaxScore: 300
   fallbackStartY: 0
-  markerLineStartX: 2
-  markerLineEndX: 3
-  markerTextX: 4.5
+  markerLineStartX: 3
+  markerLineEndX: 3.5
+  markerTextX: 5
   markerZ: 0
   markerLineWidth: 0.1
   markerFontSize: 6
-  markerFontAsset: {fileID: 11400000, guid: b492d0ac973521c41bd0b8fa59ceda86, type: 2}
+  markerFontAsset: {fileID: 11400000, guid: 5265de51471e7844ab5acd991930a500, type: 2}
   markerTextBoxSize: {x: 2, y: 1}
   markerColor: {r: 1, g: 1, b: 1, a: 1}
   markerSortingOrder: 20
@@ -617,8 +617,8 @@ Transform:
   m_GameObject: {fileID: 742212923}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 15, y: 0.5, z: 1}
+  m_LocalPosition: {x: 0, y: -2.22, z: 0}
+  m_LocalScale: {x: 15, y: 5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1126181787}

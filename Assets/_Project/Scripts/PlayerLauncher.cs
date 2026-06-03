@@ -7,6 +7,7 @@ public class PlayerLauncher : MonoBehaviour
 {
     public event Action OnFirstLaunch;
     public event Action OnFirstAttachAfterLaunch;
+    public event Action OnAttachedAfterFinalJump;
     public event Action OnJumpAttemptWithoutJumps;
     public event Action<int> OnJumpsRemainingChanged;
 
@@ -294,6 +295,7 @@ public class PlayerLauncher : MonoBehaviour
 
         AttachToPoleWithoutChecks();
         NotifyFirstAttachAfterLaunch();
+        NotifyAttachedAfterFinalJump();
     }
 
     private void FlashAttachZone(Collider2D zoneCollider)
@@ -356,6 +358,16 @@ public class PlayerLauncher : MonoBehaviour
 
         hasAttachedAfterFirstLaunch = true;
         OnFirstAttachAfterLaunch?.Invoke();
+    }
+
+    private void NotifyAttachedAfterFinalJump()
+    {
+        if (!hasLaunchedOnce || jumpsRemaining > 0)
+        {
+            return;
+        }
+
+        OnAttachedAfterFinalJump?.Invoke();
     }
 
     private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false, bool playStickSound = true)

@@ -76,6 +76,7 @@ public class GameManager : MonoBehaviour
             playerLauncher.SetInputEnabled(true);
             playerLauncher.OnFirstLaunch += StartTimer;
             playerLauncher.OnFirstAttachAfterLaunch += HideTutorial;
+            playerLauncher.OnAttachedAfterFinalJump += EndGame;
             playerLauncher.OnJumpAttemptWithoutJumps += FlashJumpsTextRed;
             playerLauncher.OnJumpsRemainingChanged += UpdateJumpsText;
             UpdateJumpsText(playerLauncher.JumpsRemaining);
@@ -602,6 +603,7 @@ public class GameManager : MonoBehaviour
         {
             playerLauncher.OnFirstLaunch -= StartTimer;
             playerLauncher.OnFirstAttachAfterLaunch -= HideTutorial;
+            playerLauncher.OnAttachedAfterFinalJump -= EndGame;
             playerLauncher.OnJumpAttemptWithoutJumps -= FlashJumpsTextRed;
             playerLauncher.OnJumpsRemainingChanged -= UpdateJumpsText;
         }

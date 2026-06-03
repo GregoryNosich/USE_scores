@@ -20,7 +20,9 @@ public class LevelGenerator : MonoBehaviour
     [SerializeField] private int chunkBaseSortingOrder = 10;
     [SerializeField] private int chunkSortingOrderStep = 1;
     [SerializeField] private int chunkVisualSortingOrder = 0;
-    [SerializeField] private int zoneVisualSortingOrder = 10;
+    [SerializeField] private int zoneVisualSortingOrder = 999;
+
+    public float StartWorldY => startY;
 
     private void Start()
     {
@@ -61,27 +63,33 @@ public class LevelGenerator : MonoBehaviour
             );
 
             chunk.name = $"{chunkPrefabs[chunkIndex].name}_{i}";
-            ApplyChunkSortingOrder(chunk, i);
-            ApplyChunkContentSorting(chunk);
+            RemoveChunkSortingGroup(chunk);
+            ApplyChunkContentSorting(chunk, i);
         }
     }
 
-    private void ApplyChunkSortingOrder(GameObject chunk, int chunkIndex)
+    private void RemoveChunkSortingGroup(GameObject chunk)
     {
         SortingGroup sortingGroup = chunk.GetComponent<SortingGroup>();
 
-        if (sortingGroup == null)
+        if (sortingGroup != null)
         {
-            sortingGroup = chunk.AddComponent<SortingGroup>();
+            if (Application.isPlaying)
+            {
+                Destroy(sortingGroup);
+            }
+            else
+            {
+                DestroyImmediate(sortingGroup);
+            }
         }
-
-        sortingGroup.sortingOrder = chunkBaseSortingOrder - chunkIndex * chunkSortingOrderStep;
     }
 
-    private void ApplyChunkContentSorting(GameObject chunk)
+    private void ApplyChunkContentSorting(GameObject chunk, int chunkIndex)
     {
         int obstacleLayer = LayerMask.NameToLayer("Obstacle");
         int boostLayer = LayerMask.NameToLayer("Boost");
+        int chunkSortingOrder = GetChunkSortingOrder(chunkIndex);
         SpriteRenderer[] renderers = chunk.GetComponentsInChildren<SpriteRenderer>(true);
 
         for (int i = 0; i < renderers.Length; i++)
@@ -102,7 +110,7 @@ public class LevelGenerator : MonoBehaviour
 
             if (zoneRoot == null)
             {
-                spriteRenderer.sortingOrder = chunkVisualSortingOrder;
+                spriteRenderer.sortingOrder = chunkSortingOrder + chunkVisualSortingOrder;
                 continue;
             }
 
@@ -110,9 +118,14 @@ public class LevelGenerator : MonoBehaviour
                 HasChildSpriteRenderer(zoneRoot);
 
             spriteRenderer.sortingOrder = isZoneRootRectangle
-                ? chunkVisualSortingOrder
+                ? chunkSortingOrder + chunkVisualSortingOrder
                 : zoneVisualSortingOrder;
         }
+    }
+
+    private int GetChunkSortingOrder(int chunkIndex)
+    {
+        return chunkBaseSortingOrder - chunkIndex * chunkSortingOrderStep;
     }
 
     private Transform FindZoneRoot(

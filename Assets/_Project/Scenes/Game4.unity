@@ -288,6 +288,7 @@ Transform:
   m_Children:
   - {fileID: 1109119136}
   - {fileID: 1635492837}
+  - {fileID: 1470898090}
   m_Father: {fileID: 1126181787}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &302826872
@@ -491,7 +492,7 @@ MonoBehaviour:
   maxScore: 300
   audioSource: {fileID: 0}
   gameOverWarningClip: {fileID: 8300000, guid: 1f6e618c01a214c42a04ca5daadfd214, type: 3}
-  gameOverWarningVolume: 1
+  gameOverWarningVolume: 0.8
 --- !u!1 &742212923
 GameObject:
   m_ObjectHideFlags: 0
@@ -916,7 +917,109 @@ MonoBehaviour:
   chunkBaseSortingOrder: 10
   chunkSortingOrderStep: 1
   chunkVisualSortingOrder: 0
-  zoneVisualSortingOrder: 10
+  zoneVisualSortingOrder: 999
+--- !u!1 &1470898089
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1470898090}
+  - component: {fileID: 1470898091}
+  - component: {fileID: 1470898092}
+  m_Layer: 0
+  m_Name: Floor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1470898090
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1470898089}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.6700001, z: -1}
+  m_LocalScale: {x: 0.77, y: 0.77, z: 0.75}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 302826871}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!212 &1470898091
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1470898089}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: ade6d86fca8028e4f88cd0524935510a, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 24.974884, y: 8.39}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!114 &1470898092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1470898089}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c450c8c7d654588b2efb48b08d487aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 1470898091}
+  levelGenerator: {fileID: 1223239431}
+  backgroundGenerator: {fileID: 302826872}
+  movingAnchor: {fileID: 0}
+  minHeight: 0.1
 --- !u!1 &1479445667
 GameObject:
   m_ObjectHideFlags: 0
@@ -1554,11 +1657,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: flyVolume
-      value: 0.3
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: launchPower
       value: 40
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: stickVolume
+      value: 2.5
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: stretchClip
@@ -1569,20 +1676,8 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 63b4aaa61ae1de44888f5fe56b614aa2, type: 3}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
-      propertyPath: stickVolume
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
-      propertyPath: greenZoneVolume
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: redZoneVolume
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
-      propertyPath: jumpsRanOutVolume
-      value: 1
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: stretchVolume
@@ -1597,8 +1692,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 942403247}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: greenZoneVolume
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachCheckRadius
       value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: jumpsRanOutVolume
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachedGravityScale

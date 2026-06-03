@@ -540,7 +540,7 @@ public class GameManager : MonoBehaviour
 
         endScreenText = textObject.GetComponent<TextMeshProUGUI>();
         endScreenText.alignment = TextAlignmentOptions.Center;
-        endScreenText.fontSize = 52f;
+        endScreenText.fontSize = 76f;
         endScreenText.color = Color.white;
 
         if (heightText != null)

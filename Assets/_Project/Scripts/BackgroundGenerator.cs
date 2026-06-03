@@ -51,6 +51,8 @@ public class BackgroundGenerator : MonoBehaviour
     private float cameraStartY;
     private bool parallaxInitialized;
 
+    public Transform BackgroundPiecesParent => backgroundPiecesParent;
+
     private void Start()
     {
         EnsureBackgroundPiecesParent();
@@ -136,6 +138,11 @@ public class BackgroundGenerator : MonoBehaviour
             Transform child = transform.GetChild(i);
 
             if (child == backgroundPiecesParent || child.name == ScoreMarkersParentName)
+            {
+                continue;
+            }
+
+            if (child.GetComponent<GroundStretchToBackground>() != null)
             {
                 continue;
             }

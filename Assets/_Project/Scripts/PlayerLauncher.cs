@@ -7,6 +7,7 @@ public class PlayerLauncher : MonoBehaviour
 {
     public event Action OnFirstLaunch;
     public event Action OnFirstAttachAfterLaunch;
+    public event Action OnObstacleZoneAttachAttempt;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
@@ -229,6 +230,7 @@ public class PlayerLauncher : MonoBehaviour
         {
             PlayOneShot(redZoneClip, redZoneVolume);
             FlashAttachZone(obstacleCollider);
+            OnObstacleZoneAttachAttempt?.Invoke();
             return;
         }
 

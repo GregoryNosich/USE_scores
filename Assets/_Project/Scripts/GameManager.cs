@@ -73,6 +73,7 @@ public class GameManager : MonoBehaviour
             playerLauncher.SetInputEnabled(true);
             playerLauncher.OnFirstLaunch += StartTimer;
             playerLauncher.OnFirstAttachAfterLaunch += HideTutorial;
+            playerLauncher.OnObstacleZoneAttachAttempt += EndGame;
         }
 
         if (tutorialObject == null)
@@ -558,6 +559,7 @@ public class GameManager : MonoBehaviour
         {
             playerLauncher.OnFirstLaunch -= StartTimer;
             playerLauncher.OnFirstAttachAfterLaunch -= HideTutorial;
+            playerLauncher.OnObstacleZoneAttachAttempt -= EndGame;
         }
     }
 }

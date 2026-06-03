@@ -309,6 +309,9 @@ MonoBehaviour:
   xPosition: 0
   zPosition: 0
   backgroundSortingOrder: -1000
+  enableVerticalParallax: 1
+  parallaxCamera: {fileID: 519420032}
+  verticalParallaxFollow: 0.5
   overlap: 0.01
   generateScoreMarkers: 1
   markerScoreStep: 10

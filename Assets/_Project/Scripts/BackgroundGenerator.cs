@@ -16,6 +16,11 @@ public class BackgroundGenerator : MonoBehaviour
     [Header("Sorting Settings")]
     [SerializeField] private int backgroundSortingOrder = -1000;
 
+    [Header("Parallax Settings")]
+    [SerializeField] private bool enableVerticalParallax = true;
+    [SerializeField] private Transform parallaxCamera;
+    [SerializeField] private float verticalParallaxFollow = 0.5f;
+
     [Header("Seam Fix")]
     [SerializeField] private float overlap = 0.01f;
 
@@ -37,15 +42,28 @@ public class BackgroundGenerator : MonoBehaviour
     [SerializeField] private Color markerColor = Color.white;
     [SerializeField] private int markerSortingOrder = 20;
 
+    private const string BackgroundPiecesParentName = "BackgroundPieces";
     private const string ScoreMarkersParentName = "ScoreMarkers";
 
     private Material markerLineMaterial;
+    private Transform backgroundPiecesParent;
+    private Vector3 backgroundBasePosition;
+    private float cameraStartY;
+    private bool parallaxInitialized;
 
     private void Start()
     {
+        EnsureBackgroundPiecesParent();
+        MoveExistingBackgroundPiecesToParent();
         GenerateBackground();
         ApplyBackgroundSorting();
         GenerateScoreMarkers();
+        InitializeParallax();
+    }
+
+    private void LateUpdate()
+    {
+        UpdateParallax();
     }
 
     private void GenerateBackground()
@@ -66,7 +84,7 @@ public class BackgroundGenerator : MonoBehaviour
                 backgroundPrefab,
                 new Vector3(xPosition, yPosition, zPosition),
                 Quaternion.identity,
-                transform
+                backgroundPiecesParent
             );
 
             piece.name = $"BackgroundPiece_{i}";
@@ -76,7 +94,12 @@ public class BackgroundGenerator : MonoBehaviour
 
     private void ApplyBackgroundSorting()
     {
-        SpriteRenderer[] renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        if (backgroundPiecesParent == null)
+        {
+            return;
+        }
+
+        SpriteRenderer[] renderers = backgroundPiecesParent.GetComponentsInChildren<SpriteRenderer>(true);
 
         for (int i = 0; i < renderers.Length; i++)
         {
@@ -85,6 +108,90 @@ public class BackgroundGenerator : MonoBehaviour
                 renderers[i].sortingOrder = backgroundSortingOrder;
             }
         }
+    }
+
+    private void EnsureBackgroundPiecesParent()
+    {
+        backgroundPiecesParent = transform.Find(BackgroundPiecesParentName);
+
+        if (backgroundPiecesParent != null)
+        {
+            return;
+        }
+
+        GameObject parentObject = new GameObject(BackgroundPiecesParentName);
+        parentObject.transform.SetParent(transform, false);
+        backgroundPiecesParent = parentObject.transform;
+    }
+
+    private void MoveExistingBackgroundPiecesToParent()
+    {
+        if (backgroundPiecesParent == null)
+        {
+            return;
+        }
+
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            Transform child = transform.GetChild(i);
+
+            if (child == backgroundPiecesParent || child.name == ScoreMarkersParentName)
+            {
+                continue;
+            }
+
+            if (child.GetComponentInChildren<SpriteRenderer>(true) == null)
+            {
+                continue;
+            }
+
+            child.SetParent(backgroundPiecesParent, true);
+        }
+    }
+
+    private void InitializeParallax()
+    {
+        if (!enableVerticalParallax || backgroundPiecesParent == null)
+        {
+            return;
+        }
+
+        if (parallaxCamera == null && Camera.main != null)
+        {
+            parallaxCamera = Camera.main.transform;
+        }
+
+        if (parallaxCamera == null)
+        {
+            return;
+        }
+
+        cameraStartY = parallaxCamera.position.y;
+        backgroundBasePosition = backgroundPiecesParent.position;
+        parallaxInitialized = true;
+    }
+
+    private void UpdateParallax()
+    {
+        if (!enableVerticalParallax)
+        {
+            return;
+        }
+
+        if (!parallaxInitialized)
+        {
+            InitializeParallax();
+        }
+
+        if (!parallaxInitialized)
+        {
+            return;
+        }
+
+        float cameraDeltaY = parallaxCamera.position.y - cameraStartY;
+        Vector3 targetPosition = backgroundBasePosition;
+        targetPosition.y += cameraDeltaY * verticalParallaxFollow;
+        backgroundPiecesParent.position = targetPosition;
     }
 
     private void GenerateScoreMarkers()

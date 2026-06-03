@@ -86,7 +86,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 2c4fdfd2c37479a4bbdd9e42a879b112, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -178,6 +178,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BoostZone
       objectReference: {fileID: 0}
+    - target: {fileID: 6483705279541783914, guid: 5c1c798000e27fd438e50d06cba08b52, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: a0a266c8135564bff974520e0dcb9169, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -196,6 +200,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 2471753609474307573}
     m_Modifications:
+    - target: {fileID: 2064854867768794391, guid: 5c686644eb4d9bd4e8765d9bdc637034, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: a0a266c8135564bff974520e0dcb9169, type: 2}
     - target: {fileID: 4560923959017043142, guid: 5c686644eb4d9bd4e8765d9bdc637034, type: 3}
       propertyPath: m_Name
       value: ObstacleZone_03

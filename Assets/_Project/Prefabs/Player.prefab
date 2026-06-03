@@ -137,14 +137,12 @@ MonoBehaviour:
   stickClip: {fileID: 8300000, guid: d65ad59d980d33345a535afa15c346aa, type: 3}
   greenZoneClip: {fileID: 8300000, guid: b2c1d18ad2e060a4f964b96def13c702, type: 3}
   redZoneClip: {fileID: 8300000, guid: 0aec37e24fb5ea146a17db50ea16c90c, type: 3}
-  jumpsRanOutClip: {fileID: 8300000, guid: b13dc199be2e75d46a10c5f835e761e1, type: 3}
   flyVolume: 1
   stretchVolume: 1
   stretchLoopTailDuration: 0.25
   stickVolume: 1
   greenZoneVolume: 1
   redZoneVolume: 1
-  jumpsRanOutVolume: 1
 --- !u!1 &3539592500955845288
 GameObject:
   m_ObjectHideFlags: 0

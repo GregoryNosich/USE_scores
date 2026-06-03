@@ -7,9 +7,6 @@ public class PlayerLauncher : MonoBehaviour
 {
     public event Action OnFirstLaunch;
     public event Action OnFirstAttachAfterLaunch;
-    public event Action OnAttachedAfterFinalJump;
-    public event Action OnJumpAttemptWithoutJumps;
-    public event Action<int> OnJumpsRemainingChanged;
 
     [Header("References")]
     [SerializeField] private Rigidbody2D rb;
@@ -17,7 +14,6 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private SpriteRenderer visualRenderer;
 
     [Header("Launch Settings")]
-    [SerializeField] private int maxJumps = 5;
     [SerializeField] private float maxDragDistance = 2.5f;
     [SerializeField] private float launchPower = 12f;
 
@@ -50,7 +46,6 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private AudioClip stickClip;
     [SerializeField] private AudioClip greenZoneClip;
     [SerializeField] private AudioClip redZoneClip;
-    [SerializeField] private AudioClip jumpsRanOutClip;
     [Min(0f)]
     [SerializeField] private float flyVolume = 1f;
     [Min(0f)]
@@ -63,22 +58,18 @@ public class PlayerLauncher : MonoBehaviour
     [SerializeField] private float greenZoneVolume = 1f;
     [Min(0f)]
     [SerializeField] private float redZoneVolume = 1f;
-    [Min(0f)]
-    [SerializeField] private float jumpsRanOutVolume = 1f;
 
     private bool isAttached = true;
     private bool isDragging = false;
     private bool inputEnabled = true;
     private bool hasLaunchedOnce = false;
     private bool hasAttachedAfterFirstLaunch = false;
-    private bool jumpCounterInitialized = false;
 
     private Vector2 dragStartWorld;
     private Vector2 currentDragWorld;
 
     private float attachX;
     private float nextLaunchMultiplier = 1f;
-    private int jumpsRemaining;
 
     private Vector3 baseVisualScale;
     private Vector3 baseVisualLocalPosition;
@@ -86,11 +77,6 @@ public class PlayerLauncher : MonoBehaviour
     private float visualTopOffset = 0.5f;
     private bool isStretchSoundActive;
     private readonly List<AudioSource> stretchAudioSources = new List<AudioSource>();
-
-    public int MaxJumps => maxJumps;
-    public int JumpsRemaining => jumpCounterInitialized ? jumpsRemaining : Mathf.Max(0, maxJumps);
-    public bool HasJumpsRemaining => JumpsRemaining > 0;
-
 
     private void Reset()
     {
@@ -138,7 +124,6 @@ public class PlayerLauncher : MonoBehaviour
 
         attachX = transform.position.x;
 
-        ResetJumpLimit();
         AttachToPoleWithoutChecks(true, false);
     }
 
@@ -163,19 +148,6 @@ public class PlayerLauncher : MonoBehaviour
 
     private void HandleDragLaunch()
     {
-        if (!HasJumpsRemaining)
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                OnJumpAttemptWithoutJumps?.Invoke();
-                PlayOneShot(jumpsRanOutClip, jumpsRanOutVolume);
-            }
-
-            StopStretchSound();
-            ReturnVisualToNormal();
-            return;
-        }
-
         if (Input.GetMouseButtonDown(0))
         {
             isDragging = true;
@@ -219,17 +191,10 @@ public class PlayerLauncher : MonoBehaviour
 
     private void Launch(float dragDistance)
     {
-        if (!HasJumpsRemaining)
-        {
-            return;
-        }
-
         if (dragDistance <= 0.05f)
         {
             return;
         }
-
-        SpendJump();
 
         if (!hasLaunchedOnce)
         {
@@ -248,12 +213,6 @@ public class PlayerLauncher : MonoBehaviour
         rb.velocity = new Vector2(0f, force);
 
         nextLaunchMultiplier = 1f;
-    }
-
-    private void SpendJump()
-    {
-        jumpsRemaining = Mathf.Max(0, jumpsRemaining - 1);
-        OnJumpsRemainingChanged?.Invoke(jumpsRemaining);
     }
 
     private void TryAttachToPole()
@@ -295,7 +254,6 @@ public class PlayerLauncher : MonoBehaviour
 
         AttachToPoleWithoutChecks();
         NotifyFirstAttachAfterLaunch();
-        NotifyAttachedAfterFinalJump();
     }
 
     private void FlashAttachZone(Collider2D zoneCollider)
@@ -358,16 +316,6 @@ public class PlayerLauncher : MonoBehaviour
 
         hasAttachedAfterFirstLaunch = true;
         OnFirstAttachAfterLaunch?.Invoke();
-    }
-
-    private void NotifyAttachedAfterFinalJump()
-    {
-        if (!hasLaunchedOnce || jumpsRemaining > 0)
-        {
-            return;
-        }
-
-        OnAttachedAfterFinalJump?.Invoke();
     }
 
     private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false, bool playStickSound = true)
@@ -808,10 +756,4 @@ public class PlayerLauncher : MonoBehaviour
         ReturnVisualToNormalInstantly();
     }
 
-    public void ResetJumpLimit()
-    {
-        jumpsRemaining = Mathf.Max(0, maxJumps);
-        jumpCounterInitialized = true;
-        OnJumpsRemainingChanged?.Invoke(jumpsRemaining);
-    }
 }

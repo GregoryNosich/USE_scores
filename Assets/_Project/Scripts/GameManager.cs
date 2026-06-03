@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -43,8 +42,6 @@ public class GameManager : MonoBehaviour
     private float timeLeft;
     private float startPlayerY;
     private Color timerTextBaseColor;
-    private Color jumpsTextBaseColor;
-    private Coroutine jumpsTextFlashRoutine;
     private Image tutorialAnimationImage;
     private Sprite[] activeTutorialFrames;
     private float tutorialFrameTimer;
@@ -76,10 +73,6 @@ public class GameManager : MonoBehaviour
             playerLauncher.SetInputEnabled(true);
             playerLauncher.OnFirstLaunch += StartTimer;
             playerLauncher.OnFirstAttachAfterLaunch += HideTutorial;
-            playerLauncher.OnAttachedAfterFinalJump += EndGame;
-            playerLauncher.OnJumpAttemptWithoutJumps += FlashJumpsTextRed;
-            playerLauncher.OnJumpsRemainingChanged += UpdateJumpsText;
-            UpdateJumpsText(playerLauncher.JumpsRemaining);
         }
 
         if (tutorialObject == null)
@@ -93,11 +86,6 @@ public class GameManager : MonoBehaviour
         if (timerText != null)
         {
             timerTextBaseColor = timerText.color;
-        }
-
-        if (jumpsText != null)
-        {
-            jumpsTextBaseColor = jumpsText.color;
         }
 
         UpdateTimerText();
@@ -136,11 +124,6 @@ public class GameManager : MonoBehaviour
         UpdateTimerText();
         UpdateHeight();
         ShowTapTutorial();
-
-        if (playerLauncher != null)
-        {
-            UpdateJumpsText(playerLauncher.JumpsRemaining);
-        }
     }
 
     private void UpdateTimer()
@@ -253,14 +236,6 @@ public class GameManager : MonoBehaviour
         heightText.text = $"Результат: {score:F1}";
     }
 
-    private void UpdateJumpsText(int jumpsRemaining)
-    {
-        if (jumpsText != null && playerLauncher != null)
-        {
-            jumpsText.text = $"Прыжки: {jumpsRemaining}/{playerLauncher.MaxJumps}";
-        }
-    }
-
     private void SetRunTextVisible(bool visible)
     {
         if (timerText != null)
@@ -275,7 +250,7 @@ public class GameManager : MonoBehaviour
 
         if (jumpsText != null)
         {
-            jumpsText.gameObject.SetActive(visible);
+            jumpsText.gameObject.SetActive(false);
         }
     }
 
@@ -458,35 +433,6 @@ public class GameManager : MonoBehaviour
         rectTransform.sizeDelta = new Vector2(width, tutorialImageHeight);
     }
 
-    private void FlashJumpsTextRed()
-    {
-        if (jumpsText == null)
-        {
-            return;
-        }
-
-        if (jumpsTextFlashRoutine != null)
-        {
-            StopCoroutine(jumpsTextFlashRoutine);
-        }
-
-        jumpsTextFlashRoutine = StartCoroutine(FlashJumpsTextRedRoutine());
-    }
-
-    private IEnumerator FlashJumpsTextRedRoutine()
-    {
-        jumpsText.color = Color.red;
-
-        yield return new WaitForSeconds(0.5f);
-
-        if (jumpsText != null)
-        {
-            jumpsText.color = jumpsTextBaseColor;
-        }
-
-        jumpsTextFlashRoutine = null;
-    }
-
     private void EndGame()
     {
         isGameOver = true;
@@ -603,9 +549,6 @@ public class GameManager : MonoBehaviour
         {
             playerLauncher.OnFirstLaunch -= StartTimer;
             playerLauncher.OnFirstAttachAfterLaunch -= HideTutorial;
-            playerLauncher.OnAttachedAfterFinalJump -= EndGame;
-            playerLauncher.OnJumpAttemptWithoutJumps -= FlashJumpsTextRed;
-            playerLauncher.OnJumpsRemainingChanged -= UpdateJumpsText;
         }
     }
 }

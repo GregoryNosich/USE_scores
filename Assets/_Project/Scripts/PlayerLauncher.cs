@@ -34,6 +34,9 @@ public class PlayerLauncher : MonoBehaviour
     [Header("Sprite Settings")]
     [SerializeField] private Sprite attachedSprite;
     [SerializeField] private Sprite flyingSprite;
+    [SerializeField] private Sprite blinkSprite;
+    [SerializeField] private Vector2 blinkIntervalRange = new Vector2(2f, 3f);
+    [SerializeField] private float blinkDuration = 0.12f;
 
     [Header("Sorting Settings")]
     [SerializeField] private int visualSortingOrder = 1000;
@@ -76,7 +79,10 @@ public class PlayerLauncher : MonoBehaviour
     private Vector3 baseVisualLocalPosition;
     private float baseVisualTopLocalY;
     private float visualTopOffset = 0.5f;
+    private float nextBlinkTime;
+    private float blinkEndTime;
     private bool isStretchSoundActive;
+    private bool isBlinking;
     private readonly List<AudioSource> stretchAudioSources = new List<AudioSource>();
 
     private void Reset()
@@ -139,6 +145,11 @@ public class PlayerLauncher : MonoBehaviour
         if (isAttached)
         {
             HandleDragLaunch();
+
+            if (isAttached)
+            {
+                UpdateAttachedBlink();
+            }
         }
         else
         {
@@ -151,6 +162,7 @@ public class PlayerLauncher : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            StopAttachedBlink(false);
             isDragging = true;
             dragStartWorld = GetMouseWorldPosition();
             currentDragWorld = dragStartWorld;
@@ -203,6 +215,7 @@ public class PlayerLauncher : MonoBehaviour
             OnFirstLaunch?.Invoke();
         }
 
+        StopAttachedBlink(false);
         isAttached = false;
         ApplyFlyingSprite();
         PlayFlySound();
@@ -323,7 +336,9 @@ public class PlayerLauncher : MonoBehaviour
     private void AttachToPoleWithoutChecks(bool resetVisualInstantly = false, bool playStickSound = true)
     {
         isAttached = true;
+        StopAttachedBlink(false);
         ApplyAttachedSprite();
+        ScheduleNextBlink();
         StopFlySound();
         StopStretchSound();
 
@@ -456,6 +471,79 @@ public class PlayerLauncher : MonoBehaviour
         }
 
         visualRenderer.sprite = flyingSprite;
+    }
+
+    private void UpdateAttachedBlink()
+    {
+        if (visualRenderer == null || blinkSprite == null)
+        {
+            return;
+        }
+
+        if (isDragging)
+        {
+            StopAttachedBlink(false);
+            return;
+        }
+
+        if (isBlinking)
+        {
+            if (Time.time >= blinkEndTime)
+            {
+                StopAttachedBlink(true);
+            }
+
+            return;
+        }
+
+        if (Time.time >= nextBlinkTime)
+        {
+            StartAttachedBlink();
+        }
+    }
+
+    private void StartAttachedBlink()
+    {
+        if (visualRenderer == null || blinkSprite == null)
+        {
+            return;
+        }
+
+        isBlinking = true;
+        blinkEndTime = Time.time + Mathf.Max(0.01f, blinkDuration);
+        visualRenderer.sprite = blinkSprite;
+    }
+
+    private void StopAttachedBlink(bool scheduleNext)
+    {
+        if (!isBlinking)
+        {
+            if (scheduleNext)
+            {
+                ScheduleNextBlink();
+            }
+
+            return;
+        }
+
+        isBlinking = false;
+
+        if (isAttached)
+        {
+            ApplyAttachedSprite();
+        }
+
+        if (scheduleNext)
+        {
+            ScheduleNextBlink();
+        }
+    }
+
+    private void ScheduleNextBlink()
+    {
+        float minInterval = Mathf.Max(0f, blinkIntervalRange.x);
+        float maxInterval = Mathf.Max(minInterval, blinkIntervalRange.y);
+        nextBlinkTime = Time.time + UnityEngine.Random.Range(minInterval, maxInterval);
     }
 
     private void ApplyVisualSortingOrder()
@@ -738,6 +826,7 @@ public class PlayerLauncher : MonoBehaviour
         if (!inputEnabled)
         {
             isDragging = false;
+            StopAttachedBlink(false);
             StopFlySound();
             StopStretchSound();
             ReturnVisualToNormalInstantly();
@@ -748,6 +837,7 @@ public class PlayerLauncher : MonoBehaviour
     {
         inputEnabled = false;
         isDragging = false;
+        StopAttachedBlink(false);
         isAttached = false;
 
         rb.velocity = Vector2.zero;

@@ -128,6 +128,9 @@ MonoBehaviour:
   flyingVisualScaleMultiplier: 1.5
   attachedSprite: {fileID: 0}
   flyingSprite: {fileID: 0}
+  blinkSprite: {fileID: 21300000, guid: d341b10f707e646419b1bd7ea82cd14e, type: 3}
+  blinkIntervalRange: {x: 2, y: 3}
+  blinkDuration: 0.12
   visualSortingOrder: 1000
   oneShotAudioSource: {fileID: 0}
   flyAudioSource: {fileID: 0}

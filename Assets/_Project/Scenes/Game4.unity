@@ -1503,7 +1503,11 @@ PrefabInstance:
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: flyingSprite
       value: 
-      objectReference: {fileID: 21300000, guid: 63b4aaa61ae1de44888f5fe56b614aa2, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f7502abe2629e34caecc657759f8518, type: 3}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: blinkDuration
+      value: 0.1
+      objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: greenZoneClip
       value: 
@@ -1519,7 +1523,7 @@ PrefabInstance:
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachedSprite
       value: 
-      objectReference: {fileID: 21300000, guid: 9cf381fc846fc6f45bd67b9fbf094f46, type: 3}
+      objectReference: {fileID: 21300000, guid: ef1be6d178e61c444ba92915f133d016, type: 3}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: visualRenderer
       value: 

@@ -343,6 +343,7 @@ GameObject:
   - component: {fileID: 519420029}
   - component: {fileID: 519420033}
   - component: {fileID: 519420034}
+  - component: {fileID: 519420035}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -491,8 +492,104 @@ MonoBehaviour:
   maxHeight: 500
   maxScore: 300
   audioSource: {fileID: 0}
-  gameOverWarningClip: {fileID: 8300000, guid: 1f6e618c01a214c42a04ca5daadfd214, type: 3}
+  gameOverWarningClip: {fileID: 8300000, guid: d5121dfe54c13ea479316a24eb681eaa, type: 3}
   gameOverWarningVolume: 0.8
+--- !u!82 &519420035
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: a9ddbc87e4cf79e4b99fc6467073eb4c, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 0.15
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &742212923
 GameObject:
   m_ObjectHideFlags: 0
@@ -1650,7 +1747,7 @@ PrefabInstance:
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: flyClip
       value: 
-      objectReference: {fileID: 8300000, guid: 0441047dc69d7f442ad9f3245f3edfa5, type: 3}
+      objectReference: {fileID: 8300000, guid: 513086073c67ff34e87b379f3300faca, type: 3}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: maxJumps
       value: 5
@@ -1660,12 +1757,20 @@ PrefabInstance:
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: stickClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 5f88b9929826d664f81ed1372cdf8f15, type: 3}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: launchPower
       value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: redZoneClip
+      value: 
+      objectReference: {fileID: 8300000, guid: d1c8f5bf9aafd2749bd417ce37ac74cd, type: 3}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: stickVolume
-      value: 2.5
+      value: 2.7
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: stretchClip
@@ -1676,8 +1781,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 21300000, guid: 63b4aaa61ae1de44888f5fe56b614aa2, type: 3}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: greenZoneClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 8fad751416d2a404691ef08caa641f8c, type: 3}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: redZoneVolume
-      value: 0.5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: stretchVolume
@@ -1696,12 +1805,16 @@ PrefabInstance:
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
+      propertyPath: jumpsRanOutClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 8f7f9810879098d4eac385abbc9feea6, type: 3}
+    - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachCheckRadius
       value: 0.3
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: jumpsRanOutVolume
-      value: 1.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4492862462334148675, guid: 3345403601c22594e86ab018b2b7acce, type: 3}
       propertyPath: attachedGravityScale

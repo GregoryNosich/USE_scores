@@ -193,9 +193,18 @@ public class GameManager : MonoBehaviour
     {
         if (timerText != null)
         {
-            timerText.text = $"Осталось {timeLeft:F1} секунд";
+            timerText.text = $"{FormatTime(timeLeft)}";
             timerText.color = timeLeft <= lowTimeWarningThreshold ? Color.red : timerTextBaseColor;
         }
+    }
+
+    private string FormatTime(float seconds)
+    {
+        int totalSeconds = Mathf.CeilToInt(Mathf.Max(0f, seconds));
+        int minutes = totalSeconds / 60;
+        int remainingSeconds = totalSeconds % 60;
+
+        return $"{minutes:00}:{remainingSeconds:00}";
     }
 
     private float GetScore(float height)
@@ -233,7 +242,7 @@ public class GameManager : MonoBehaviour
 
         float height = Mathf.Max(0f, player.position.y - startPlayerY);
         float score = GetScore(height);
-        heightText.text = $"Результат: {score:F1}";
+        heightText.text = $"{Mathf.RoundToInt(score)}";
     }
 
     private void SetRunTextVisible(bool visible)
@@ -524,7 +533,7 @@ public class GameManager : MonoBehaviour
 
         if (endScreenText != null)
         {
-            endScreenText.text = $"Игра окончена!\nРезультат: {GetCurrentScore():F1}";
+            endScreenText.text = $"Игра окончена!\nРезультат: {Mathf.RoundToInt(GetCurrentScore())}";
         }
 
         SetEndScreenVisible(true);

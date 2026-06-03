@@ -183,7 +183,7 @@ MonoBehaviour:
   generateScoreMarkers: 1
   markerScoreStep: 10
   maxMarkerScore: 300
-  fallbackMaxHeight: 450
+  fallbackMaxHeight: 600
   fallbackMaxScore: 300
   fallbackStartY: 0
   markerLineStartX: 3
@@ -355,7 +355,7 @@ MonoBehaviour:
   endScreenButton: {fileID: 0}
   timeLimit: 15
   lowTimeWarningThreshold: 3
-  maxHeight: 500
+  maxHeight: 600
   maxScore: 300
   audioSource: {fileID: 0}
   gameOverWarningClip: {fileID: 8300000, guid: d5121dfe54c13ea479316a24eb681eaa, type: 3}
@@ -1038,10 +1038,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Time
+  m_text: 00:00
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b492d0ac973521c41bd0b8fa59ceda86, type: 2}
-  m_sharedMaterial: {fileID: -2411483459336563680, guid: b492d0ac973521c41bd0b8fa59ceda86, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 5265de51471e7844ab5acd991930a500, type: 2}
+  m_sharedMaterial: {fileID: 2298357555848337067, guid: 5265de51471e7844ab5acd991930a500, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1065,8 +1065,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 52
+  m_fontSizeBase: 52
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1256,10 +1256,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Score
+  m_text: 300
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: b492d0ac973521c41bd0b8fa59ceda86, type: 2}
-  m_sharedMaterial: {fileID: -2411483459336563680, guid: b492d0ac973521c41bd0b8fa59ceda86, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 5265de51471e7844ab5acd991930a500, type: 2}
+  m_sharedMaterial: {fileID: 2298357555848337067, guid: 5265de51471e7844ab5acd991930a500, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1283,8 +1283,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 52
+  m_fontSizeBase: 52
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

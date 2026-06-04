@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button startScreenButton;
     [SerializeField] private GameObject endScreenRoot;
     [SerializeField] private TMP_Text endScreenResultText;
+    [SerializeField] private GameObject endScreenWarnText;
     [SerializeField] private Button restartButton;
     [SerializeField] private Button exitButton;
 
@@ -141,7 +142,7 @@ public class GameManager : MonoBehaviour
 
         playerLauncher.OnFirstLaunch += StartTimer;
         playerLauncher.OnFirstAttachAfterLaunch += HideTutorial;
-        playerLauncher.OnObstacleZoneAttachAttempt += EndGame;
+        playerLauncher.OnObstacleZoneAttachAttempt += EndGameFromRedZone;
     }
 
     private void CacheTimerParts()
@@ -562,6 +563,16 @@ public class GameManager : MonoBehaviour
 
     private void EndGame()
     {
+        EndGame(false);
+    }
+
+    private void EndGameFromRedZone()
+    {
+        EndGame(true);
+    }
+
+    private void EndGame(bool showRedZoneWarning)
+    {
         if (isGameOver)
         {
             return;
@@ -575,10 +586,10 @@ public class GameManager : MonoBehaviour
         }
 
         HideTutorial();
-        ShowEndScreen();
+        ShowEndScreen(showRedZoneWarning);
     }
 
-    private void ShowEndScreen()
+    private void ShowEndScreen(bool showRedZoneWarning)
     {
         if (endScreenResultText != null)
         {
@@ -586,6 +597,7 @@ public class GameManager : MonoBehaviour
                 $"{Mathf.RoundToInt(GetCurrentScore())} \u0438\u0437 {Mathf.RoundToInt(maxScore)}";
         }
 
+        SetEndScreenWarningVisible(showRedZoneWarning);
         SetEndScreenVisible(true);
     }
 
@@ -594,6 +606,19 @@ public class GameManager : MonoBehaviour
         if (endScreenRoot != null)
         {
             endScreenRoot.SetActive(visible);
+        }
+
+        if (!visible)
+        {
+            SetEndScreenWarningVisible(false);
+        }
+    }
+
+    private void SetEndScreenWarningVisible(bool visible)
+    {
+        if (endScreenWarnText != null)
+        {
+            endScreenWarnText.SetActive(visible);
         }
     }
 
@@ -662,7 +687,7 @@ public class GameManager : MonoBehaviour
         {
             playerLauncher.OnFirstLaunch -= StartTimer;
             playerLauncher.OnFirstAttachAfterLaunch -= HideTutorial;
-            playerLauncher.OnObstacleZoneAttachAttempt -= EndGame;
+            playerLauncher.OnObstacleZoneAttachAttempt -= EndGameFromRedZone;
         }
     }
 }

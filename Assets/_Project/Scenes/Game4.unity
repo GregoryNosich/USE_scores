@@ -386,7 +386,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   backgroundPrefab: {fileID: 6923347790055899842, guid: a3cf377031bf0ed4681b80401ea2b244, type: 3}
   gameManager: {fileID: 519420034}
-  piecesCount: 100
+  piecesCount: 200
   startY: 22
   xPosition: 0
   zPosition: 0
@@ -787,9 +787,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 1761267755}
   playerLauncher: {fileID: 1761267756}
-  timeLimit: 15
+  timeLimit: 30
   lowTimeWarningThreshold: 3
-  maxHeight: 600
+  maxHeight: 1200
   maxScore: 300
   minuteTensText: {fileID: 772983939}
   minuteOnesText: {fileID: 122599263}
@@ -2564,7 +2564,7 @@ MonoBehaviour:
   - {fileID: 8896878722327563537, guid: 6e810285b8acd0c478a172423e2b42bf, type: 3}
   startY: -2
   chunkHeight: 9.5
-  chunksCount: 100
+  chunksCount: 200
   generateOnStart: 1
   avoidRepeatingSameChunk: 1
   chunkBaseSortingOrder: 10
